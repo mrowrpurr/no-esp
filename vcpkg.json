@@ -1,0 +1,13 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "skyrim-esp-less",
+    "version-string": "0.0.1",
+    "description": ".esp-less Papyrus (for Skyrim modders)",
+    "homepage": "https://github.com/mrowrpurr/esp-less",
+    "license": "MIT",
+    "supports": "windows & x64",
+    "dependencies": [
+        { "name": "vcpkg-cmake-config", "host": true },
+        "commonlibae"
+    ]
+}

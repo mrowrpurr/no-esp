@@ -1,0 +1,12 @@
+{
+    "registries": [
+        {
+            "kind": "git",
+            "repository": "https://github.com/mrowrpurr/vcpkg-repo.git",
+            "baseline": "97bc962900681e73c23e8f47bced00d7b01c60e2",
+            "packages": [
+                "commonlibae"
+            ]
+        }
+    ]
+}
