@@ -1,15 +1,9 @@
 #pragma warning(push)
 
 #include <SKSE/SKSE.h>
-#include <RE/C/ConsoleLog.h>
 
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
-    SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){
-        if (message->type == SKSE::MessagingInterface::kDataLoaded) {
-            RE::ConsoleLog::GetSingleton()->Print("Hi from .esl-less!");
-        }
-    });
     return true;
 }
 
