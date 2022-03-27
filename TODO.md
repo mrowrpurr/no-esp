@@ -5,6 +5,7 @@
 - [ ] Support finding forms from other mods
 - [ ] Bind by calling Papyrus function to Bind a script to an Object
 - [ ] Skyrim SE + VR + AE
+- [ ] Release on Nexus
 
 ## Later:
 - [ ] Skyrim LE
