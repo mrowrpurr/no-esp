@@ -12,7 +12,7 @@ file(GLOB_RECURSE ESPLess_Files src/*.cpp include/*.h)
 add_library(ESPLess SHARED ${ESPLess_Files})
 
 # Define the .dll name
-set_target_properties(ESPLess PROPERTIES OUTPUT_NAME "esp-Less")
+set_target_properties(ESPLess PROPERTIES OUTPUT_NAME "esp-less")
 
 # Setup includes
 target_include_directories(ESPLess PRIVATE include)
