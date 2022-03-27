@@ -31,25 +31,54 @@ namespace ESPLess::PapyrusScriptBindings {
 
     void BindToReferencesOfForm(const std::string& scriptName, RE::TESForm* form, bool addOnce = false) {
         auto* ref = form->AsReference();
-        if (ref) {
+        if (ref != nullptr) {
             BindToObjectReference(scriptName, ref, addOnce);
         } else {
-            RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] UNSUPPORTED: REFERENCE LOOKUP for script '{}'", scriptName).c_str());
-//            auto* dataHandler = RE::TESDataHandler::GetSingleton();
-//            auto& references = dataHandler->GetFormArray<RE::TESObjectREFR>();
-//            for (auto& ref : references) {
-//                if (ref->GetBaseObject()->GetFormID() == form->formID) {
-//                    BindToObjectReference(scriptName, ref, addOnce);
-//                }
-//            }
+            auto* dataHandler = RE::TESDataHandler::GetSingleton();
+            auto& references = dataHandler->GetFormArray<RE::TESObjectREFR>();
+            for (auto& thisRef : references) {
+                if (thisRef->GetBaseObject()->GetFormID() == form->formID) {
+                    BindToObjectReference(scriptName, thisRef, addOnce);
+                }
+            }
         }
     }
 
     void Bind(const BindingDefinition& def) {
         try {
             if (def.Type == BindingDefinitionType::EditorID) {
+
+                RE::ConsoleLog::GetSingleton()->Print(std::format("LOOKING FOR HOD...").c_str());
+
+//                auto* hodBase = RE::TESForm::LookupByEditorID(RE::BSFixedString("Hod"));
+//                if (hodBase == nullptr) {
+//                    RE::ConsoleLog::GetSingleton()->Print(std::format("NO HOD!!").c_str());
+//                } else {
+//                    RE::ConsoleLog::GetSingleton()->Print(std::format("Found hod!!").c_str());
+//                }
+
+                const auto& [editorIdsToForms, lock] = RE::TESForm::GetAllFormsByEditorID();
+
+                RE::BSFixedString hodEditorId = "SVEN";
+                for (const auto& [editorId, form] : *editorIdsToForms) {
+                    if (editorId == hodEditorId) {
+                        RE::ConsoleLog::GetSingleton()->Print("FOUND FRIGGIN HOD FINALLY! Well, Sven.");
+                    }
+//                    RE::ConsoleLog::GetSingleton()->Print(editorId.c_str());
+                }
+
+//                for (auto* something : allFormsWithLocks->first)
+
+                if (editorIdsToForms->contains(RE::BSFixedString("Hod"))) {
+                    RE::ConsoleLog::GetSingleton()->Print(std::format("Found hod!!").c_str());
+                    auto hodBase = editorIdsToForms->find(RE::BSFixedString("Hod"))->second;
+                    RE::ConsoleLog::GetSingleton()->Print(std::format("Hod name '{}'", hodBase->GetName()).c_str());
+                } else {
+                    RE::ConsoleLog::GetSingleton()->Print(std::format("NO HOD!!").c_str());
+                }
+
                 auto* form = RE::TESForm::LookupByEditorID(def.EditorID);
-                if (form) {
+                if (form != nullptr) {
                     BindToReferencesOfForm(def.ScriptName, form, def.AddOnce);
                 } else {
                     RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find Form via Editor ID: '{}' for script '{}'", def.EditorID, def.ScriptName).c_str());
@@ -57,7 +86,7 @@ namespace ESPLess::PapyrusScriptBindings {
             } else if (def.Type == BindingDefinitionType::FormID) {
                 RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] UNSUPPORTED: Form ID binding for script '{}'", def.ScriptName).c_str());
                 auto* form = RE::TESForm::LookupByID(def.FormID);
-                if (form) {
+                if (form != nullptr) {
                     BindToReferencesOfForm(def.ScriptName, form, def.AddOnce);
                 } else {
                     RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find Form via Form ID: '{}' for script '{}'", def.FormID, def.ScriptName).c_str());
