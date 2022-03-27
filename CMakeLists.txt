@@ -1,22 +1,25 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(SkyrimESPless VERSION 0.0.1 LANGUAGES CXX)
+project(SkyrimESPLess VERSION 0.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Project files
-file(GLOB_RECURSE SkyrimESPless_Files src/*.cpp include/*.h)
+file(GLOB_RECURSE SkyrimESPLess_Files src/*.cpp include/*.h)
 
 # Define your SKSE plugin
-add_library(SkyrimESPless SHARED ${SkyrimESPless_Files})
+add_library(SkyrimESPLess SHARED ${SkyrimESPLess_Files})
 
 # Define the .dll name
-set_target_properties(SkyrimESPless PROPERTIES OUTPUT_NAME "esp-less")
+set_target_properties(SkyrimESPLess PROPERTIES OUTPUT_NAME "esp-Less")
+
+# Setup includes
+target_include_directories(SkyrimESPLess PRIVATE include)
 
 # Link to CommonLibSSE
 find_package(CommonLibSSE CONFIG REQUIRED)
-target_link_libraries(SkyrimESPless PRIVATE CommonLibSSE::CommonLibSSE)
+target_link_libraries(SkyrimESPLess PRIVATE CommonLibSSE::CommonLibSSE)
 
 # Setup a folder which the output .dll automatically gets copied to!
 set(DLL_FOLDER "C:/Users/mrowr/Dropbox/Skyrim/Mod Authoring/Mods/Mrowr Purr's SKSE Plugins - AE/SKSE/Plugins")
