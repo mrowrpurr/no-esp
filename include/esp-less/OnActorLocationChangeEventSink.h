@@ -3,6 +3,23 @@
 #include <functional>
 #include <utility>
 
+//#include <RE/T/TESActorLocationChangeEvent.h>
+namespace RE
+{
+	class BGSLocation;
+	class TESObjectREFR;
+
+	struct TESActorLocationChangeEvent
+	{
+	public:
+		// members
+		NiPointer<TESObjectREFR> actor;
+		BGSLocation*             oldLoc;
+		BGSLocation*             newLoc;
+	};
+	static_assert(sizeof(TESActorLocationChangeEvent) == 0x18);
+}
+
 namespace ESPLess {
 
     class OnActorLocationChangeEventSink : public RE::BSTEventSink<RE::TESActorLocationChangeEvent> {

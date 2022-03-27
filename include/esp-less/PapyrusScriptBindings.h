@@ -16,6 +16,20 @@ namespace ESPLess::PapyrusScriptBindings {
             auto* handlePolicy = vm->GetObjectHandlePolicy();
             RE::VMHandle handle = handlePolicy->GetHandleForObject(ref->GetFormType(), ref);
             if (handle) {
+
+                // If there is already a script with the same name attached to this object, don't bind a new one
+                RE::BSFixedString caseInsensitiveScriptName = scriptName;
+                if (addOnce) {
+                    if (vm->attachedScripts.contains(handle)) {
+                        for (auto& attachedScript : vm->attachedScripts.find(handle)->second) {
+                            if (attachedScript->GetTypeInfo()->GetName() == caseInsensitiveScriptName) {
+                                RE::ConsoleLog::GetSingleton()->Print(std::format("{} already bound to {}, skipping", scriptName, ref->GetBaseObject()->GetName()).c_str());
+                                return; // Don't bind! Already bound!
+                            }
+                        }
+                    }
+                }
+
                 RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
                 vm->CreateObject(scriptName, objectPtr);
                 auto* bindPolicy = vm->GetObjectBindPolicy();
@@ -34,49 +48,24 @@ namespace ESPLess::PapyrusScriptBindings {
         if (ref != nullptr) {
             BindToObjectReference(scriptName, ref, addOnce);
         } else {
-            auto* dataHandler = RE::TESDataHandler::GetSingleton();
-            auto& references = dataHandler->GetFormArray<RE::TESObjectREFR>();
-            for (auto& thisRef : references) {
-                if (thisRef->GetBaseObject()->GetFormID() == form->formID) {
-                    BindToObjectReference(scriptName, thisRef, addOnce);
-                }
-            }
+            RE::ConsoleLog::GetSingleton()->Print(std::format("Form '{}' is not a reference, cannot bind script '{}'", form->GetName(), scriptName).c_str());
+//            auto* dataHandler = RE::TESDataHandler::GetSingleton();
+//            auto& references = dataHandler->GetFormArray<RE::TESObjectREFR>();
+//            RE::ConsoleLog::GetSingleton()->Print(std::format("Searching {} references of {} to bind {} script to", references.size(), form->GetName(), scriptName).c_str());
+//            int i = 0;
+//            for (auto& thisRef : references) {
+//                if (thisRef->GetBaseObject()->GetFormID() == form->formID) {
+//                    i++;
+//                    BindToObjectReference(scriptName, thisRef, addOnce);
+//                }
+//            }
+//            RE::ConsoleLog::GetSingleton()->Print(std::format("Found {} references", i).c_str());
         }
     }
 
     void Bind(const BindingDefinition& def) {
         try {
             if (def.Type == BindingDefinitionType::EditorID) {
-
-                RE::ConsoleLog::GetSingleton()->Print(std::format("LOOKING FOR HOD...").c_str());
-
-//                auto* hodBase = RE::TESForm::LookupByEditorID(RE::BSFixedString("Hod"));
-//                if (hodBase == nullptr) {
-//                    RE::ConsoleLog::GetSingleton()->Print(std::format("NO HOD!!").c_str());
-//                } else {
-//                    RE::ConsoleLog::GetSingleton()->Print(std::format("Found hod!!").c_str());
-//                }
-
-                const auto& [editorIdsToForms, lock] = RE::TESForm::GetAllFormsByEditorID();
-
-                RE::BSFixedString hodEditorId = "SVEN";
-                for (const auto& [editorId, form] : *editorIdsToForms) {
-                    if (editorId == hodEditorId) {
-                        RE::ConsoleLog::GetSingleton()->Print("FOUND FRIGGIN HOD FINALLY! Well, Sven.");
-                    }
-//                    RE::ConsoleLog::GetSingleton()->Print(editorId.c_str());
-                }
-
-//                for (auto* something : allFormsWithLocks->first)
-
-                if (editorIdsToForms->contains(RE::BSFixedString("Hod"))) {
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("Found hod!!").c_str());
-                    auto hodBase = editorIdsToForms->find(RE::BSFixedString("Hod"))->second;
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("Hod name '{}'", hodBase->GetName()).c_str());
-                } else {
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("NO HOD!!").c_str());
-                }
-
                 auto* form = RE::TESForm::LookupByEditorID(def.EditorID);
                 if (form != nullptr) {
                     BindToReferencesOfForm(def.ScriptName, form, def.AddOnce);
@@ -84,7 +73,6 @@ namespace ESPLess::PapyrusScriptBindings {
                     RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find Form via Editor ID: '{}' for script '{}'", def.EditorID, def.ScriptName).c_str());
                 }
             } else if (def.Type == BindingDefinitionType::FormID) {
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] UNSUPPORTED: Form ID binding for script '{}'", def.ScriptName).c_str());
                 auto* form = RE::TESForm::LookupByID(def.FormID);
                 if (form != nullptr) {
                     BindToReferencesOfForm(def.ScriptName, form, def.AddOnce);
