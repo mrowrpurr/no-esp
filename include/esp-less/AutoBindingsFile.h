@@ -61,13 +61,17 @@ namespace ESPLess::AutoBindingsFile {
                     entry.ScriptName = matches[2].str();
                     entry.EditorID = matches[3].str();
                 } else if (std::regex_search(line, matches, scriptNameOnly)) {
-                    entry.Type = BindingDefinitionType::EditorID;
+                    entry.Type = BindingDefinitionType::FormID;
                     entry.ID = matches[1].str();
                     entry.ScriptName = matches[2].str();
-                    entry.EditorID = "PlayerRef";
+                    entry.FormID = 20; // 0x14 which is the PlayerRef
                 }
             } catch (...) {
                 RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Error parsing line: '{}'", line).c_str());
+            }
+            if (entry.ID == "*") {
+                entry.ID = "";
+                entry.AddOnce = true;
             }
             return entry;
         }

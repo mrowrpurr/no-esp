@@ -12,5 +12,6 @@ namespace ESPLess {
         std::string EditorID;
         int FormID = 0;
         std::string Plugin;
+        bool AddOnce = false;
     };
 }

@@ -43,16 +43,20 @@ namespace ESPLess {
                              RE::ConsoleLog::GetSingleton()->Print(std::format("[Bindings] Failed to link script", entry.ScriptName).c_str());
                          }
                     }
-                    if (saveGameData.CompletedAutoBindings.contains(entry.Filename)) {
-                        if (! saveGameData.CompletedAutoBindings[entry.Filename].contains(entry.ID)) {
-                            saveGameData.CompletedAutoBindings[entry.Filename].insert(entry.ID);
+                    if (entry.AddOnce && entry.ID.empty()) {
+                        ESPLess::PapyrusScriptBindings::Bind(entry);
+                    } else {
+                        if (saveGameData.CompletedAutoBindings.contains(entry.Filename)) {
+                            if (! saveGameData.CompletedAutoBindings[entry.Filename].contains(entry.ID)) {
+                                saveGameData.CompletedAutoBindings[entry.Filename].insert(entry.ID);
+                                ESPLess::PapyrusScriptBindings::Bind(entry);
+                            }
+                        } else {
+                            std::set<std::string> idsCompletedForThisFile{entry.ID};
+                            std::unordered_map<std::string, std::set<std::string>> completedBindingsForThisFile;
+                            completedBindingsForThisFile.insert_or_assign(entry.Filename, idsCompletedForThisFile);
                             ESPLess::PapyrusScriptBindings::Bind(entry);
                         }
-                    } else {
-                        std::set<std::string> idsCompletedForThisFile{entry.ID};
-                        std::unordered_map<std::string, std::set<std::string>> completedBindingsForThisFile;
-                        completedBindingsForThisFile.insert_or_assign(entry.Filename, idsCompletedForThisFile);
-                        ESPLess::PapyrusScriptBindings::Bind(entry);
                     }
                 });
             }

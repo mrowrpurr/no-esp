@@ -10,7 +10,7 @@ using namespace RE::BSScript::Internal;
 
 namespace ESPLess::PapyrusScriptBindings {
 
-    void BindToObjectReference(const std::string& scriptName, RE::TESObjectREFR* ref) {
+    void BindToObjectReference(const std::string& scriptName, RE::TESObjectREFR* ref, bool addOnce = false) {
         try {
             auto* vm = VirtualMachine::GetSingleton();
             auto* handlePolicy = vm->GetObjectHandlePolicy();
@@ -29,22 +29,39 @@ namespace ESPLess::PapyrusScriptBindings {
         }
     }
 
+    void BindToReferencesOfForm(const std::string& scriptName, RE::TESForm* form, bool addOnce = false) {
+        auto* ref = form->AsReference();
+        if (ref) {
+            BindToObjectReference(scriptName, ref, addOnce);
+        } else {
+            RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] UNSUPPORTED: REFERENCE LOOKUP for script '{}'", scriptName).c_str());
+//            auto* dataHandler = RE::TESDataHandler::GetSingleton();
+//            auto& references = dataHandler->GetFormArray<RE::TESObjectREFR>();
+//            for (auto& ref : references) {
+//                if (ref->GetBaseObject()->GetFormID() == form->formID) {
+//                    BindToObjectReference(scriptName, ref, addOnce);
+//                }
+//            }
+        }
+    }
+
     void Bind(const BindingDefinition& def) {
         try {
             if (def.Type == BindingDefinitionType::EditorID) {
                 auto* form = RE::TESForm::LookupByEditorID(def.EditorID);
                 if (form) {
-                    auto* ref = form->AsReference();
-                    if (ref) {
-                        BindToObjectReference(def.ScriptName, ref);
-                    } else {
-                        RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Form not a reference for Editor ID: '{}' for script '{}'", def.EditorID, def.ScriptName).c_str());
-                    }
+                    BindToReferencesOfForm(def.ScriptName, form, def.AddOnce);
                 } else {
                     RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find Form via Editor ID: '{}' for script '{}'", def.EditorID, def.ScriptName).c_str());
                 }
             } else if (def.Type == BindingDefinitionType::FormID) {
                 RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] UNSUPPORTED: Form ID binding for script '{}'", def.ScriptName).c_str());
+                auto* form = RE::TESForm::LookupByID(def.FormID);
+                if (form) {
+                    BindToReferencesOfForm(def.ScriptName, form, def.AddOnce);
+                } else {
+                    RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find Form via Form ID: '{}' for script '{}'", def.FormID, def.ScriptName).c_str());
+                }
             }
         } catch (...) {
             if (def.Filename.empty()) {
