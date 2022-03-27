@@ -82,7 +82,6 @@ namespace ESPLess::AutoBindingsFile {
             if (file.is_regular_file()) {
                 try {
                     auto text = ReadTextFile(file.path());
-                    RE::ConsoleLog::GetSingleton()->Print(text.c_str());
                     std::istringstream stringStream(text);
                     for (std::string line; std::getline(stringStream, line); ) {
                         if (!line.empty()) {

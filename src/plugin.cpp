@@ -25,19 +25,3 @@ extern "C" __declspec(dllexport) constinit auto SKSEPlugin_Version = [](){
     version.CompatibleVersions({ SKSE::RUNTIME_LATEST });
     return version;
 }();
-
-
-
-
-
-
-
-
-//            vm->objectTypeToTypeID()
-
-//            policy->GetHandleForObject(character);
-
-// Find Gold! Then bind a Papyrus script to it!
-//            auto* dataHandler = RE::TESDataHandler::GetSingleton();
-//            auto* gold = dataHandler->LookupForm(0xf, "Skyrim.esm");
-//            gold->
