@@ -18,9 +18,9 @@ target_include_directories(scripts-without-esp PRIVATE include)
 
 # Add options for specifying the version
 # Only one version may be provided at a time
-option(SKYRIM_AE "Compile plugin for Skyrim AE" ON)
+option(SKYRIM_AE "Compile plugin for Skyrim AE" OFF)
 option(SKYRIM_SE "Compile plugin for Skyrim SE" OFF)
-option(SKYRIM_VR "Compile plugin for Skyrim VR" OFF)
+option(SKYRIM_VR "Compile plugin for Skyrim VR" VR)
 
 # Exit if no Skyrim version was specified
 if(NOT ${SKYRIM_AE} AND NOT ${SKYRIM_SE} AND NOT ${SKYRIM_VR})
