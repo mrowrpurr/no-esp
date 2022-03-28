@@ -46,16 +46,6 @@ namespace ScriptsWithoutESP::PapyrusScriptBindings {
         }
     }
 
-// TODO
-//    void BindToReferencesOfForm(const std::string& scriptName, RE::TESForm* form, bool addOnce = false) {
-//        auto* ref = form->AsReference();
-//        if (ref != nullptr) {
-//            BindToObjectReference(scriptName, ref, addOnce);
-//        } else {
-//            RE::ConsoleLog::GetSingleton()->Print(std::format("Form '{}' is not a reference, cannot bind script '{}'", form->GetName(), scriptName).c_str());
-//        }
-//    }
-
     void BindToEditorId(const std::string& scriptName, const std::string& editorId, bool addOnce = false) {
         auto* form = RE::TESForm::LookupByEditorID(editorId);
         if (form) {

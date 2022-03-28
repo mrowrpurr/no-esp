@@ -18,9 +18,9 @@ target_include_directories(scripts-without-esp PRIVATE include)
 
 # Add options for specifying the version
 # Only one version may be provided at a time
-option(SKYRIM_AE "Compile plugin for Skyrim AE" OFF)
+option(SKYRIM_AE "Compile plugin for Skyrim AE" ON)
 option(SKYRIM_SE "Compile plugin for Skyrim SE" OFF)
-option(SKYRIM_VR "Compile plugin for Skyrim VR" VR)
+option(SKYRIM_VR "Compile plugin for Skyrim VR" OFF)
 
 # Exit if no Skyrim version was specified
 if(NOT ${SKYRIM_AE} AND NOT ${SKYRIM_SE} AND NOT ${SKYRIM_VR})
@@ -114,7 +114,7 @@ add_custom_command(
 	TARGET "${PROJECT_NAME}"
 	POST_BUILD
 	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
-	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
+#	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
 	COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Scripts" "${MOD_FOLDER}/Scripts"
 	COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Source" "${MOD_FOLDER}/Source"
 	VERBATIM

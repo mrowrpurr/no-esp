@@ -70,11 +70,9 @@ namespace ScriptsWithoutESP::AutoBindingsFile {
     }
 
     void Read(std::function<void(const BindingDefinition& entry)> entryCallback, const std::string& bindingFilesDirectory = "Data/Scripts/AutoBindings") {
-        RE::ConsoleLog::GetSingleton()->Print("Looking for files...");
         for (auto& file : std::filesystem::directory_iterator(bindingFilesDirectory)) {
             if (file.is_regular_file()) {
                 try {
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("File: {}", file.path().string()).c_str());
                     auto text = ReadTextFile(file.path());
                     std::istringstream stringStream(text);
                     for (std::string line; std::getline(stringStream, line); ) {

@@ -155,6 +155,48 @@
       "toolchainFile": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake",
       "binaryDir": "${sourceDir}/build/VR",
       "installDir": "${sourceDir}/install/VR"
+    },
+    {
+      "name": "vs2022-windows-release-ae",
+      "inherits": [ "vs2022-windows-release", "vcpkg", "windows" ],
+      "cacheVariables": {
+        "SKYRIM_AE": "ON",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "STRING",
+          "value": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "toolchainFile": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "${sourceDir}/build/AE",
+      "installDir": "${sourceDir}/install/AE"
+    },
+    {
+      "name": "vs2022-windows-release-se",
+      "inherits": [ "vs2022-windows-release", "vcpkg", "windows" ],
+      "cacheVariables": {
+        "SKYRIM_SE": "ON",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "STRING",
+          "value": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "toolchainFile": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "${sourceDir}/build/SE",
+      "installDir": "${sourceDir}/install/SE"
+    },
+    {
+      "name": "vs2022-windows-release-vr",
+      "inherits": [ "vs2022-windows-release", "vcpkg", "windows" ],
+      "cacheVariables": {
+        "SKYRIM_VR": "ON",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "STRING",
+          "value": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "toolchainFile": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "${sourceDir}/build/VR",
+      "installDir": "${sourceDir}/install/VR"
     }
   ],
   "buildPresets": [
@@ -186,6 +228,24 @@
       "name": "Debug - VR",
       "displayName": "Debug - VR",
       "configurePreset": "vs2022-windows-debug-vr",
+      "description": "VR"
+    },
+    {
+      "name": "Release - AE",
+      "displayName": "Release - AE",
+      "configurePreset": "vs2022-windows-release-ae",
+      "description": "AE"
+    },
+    {
+      "name": "Release - SE",
+      "displayName": "Release - SE",
+      "configurePreset": "vs2022-windows-release-se",
+      "description": "SE"
+    },
+    {
+      "name": "Release - VR",
+      "displayName": "Release - VR",
+      "configurePreset": "vs2022-windows-release-vr",
       "description": "VR"
     }
   ]
