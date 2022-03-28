@@ -18,8 +18,8 @@ target_include_directories(scripts-without-esp PRIVATE include)
 
 # Add options for specifying the version
 # Only one version may be provided at a time
-option(SKYRIM_AE "Compile plugin for Skyrim AE" OFF)
-option(SKYRIM_SE "Compile plugin for Skyrim SE" ON)
+option(SKYRIM_AE "Compile plugin for Skyrim AE" ON)
+option(SKYRIM_SE "Compile plugin for Skyrim SE" OFF)
 option(SKYRIM_VR "Compile plugin for Skyrim VR" OFF)
 
 # Exit if no Skyrim version was specified
@@ -55,16 +55,16 @@ find_package(spdlog CONFIG REQUIRED)
 target_link_libraries("${PROJECT_NAME}" PUBLIC spdlog::spdlog)
 
 # CommonLib
-#if(${SKYRIM_AE})
-#	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/AE" CommonLibSSE EXCLUDE_FROM_ALL)
-#    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
-#elseif(${SKYRIM_SE})
+if(${SKYRIM_AE})
+	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/AE" CommonLibSSE EXCLUDE_FROM_ALL)
+    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
+elseif(${SKYRIM_SE})
 	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/SE" CommonLibSSE EXCLUDE_FROM_ALL)
     target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
-#elseif(${SKYRIM_VR})
-#	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/VR" CommonLibVR EXCLUDE_FROM_ALL)
-#    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibVR::CommonLibVR)
-#endif()
+elseif(${SKYRIM_VR})
+	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/VR" CommonLibVR EXCLUDE_FROM_ALL)
+    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibVR::CommonLibVR)
+endif()
 
 # Get output directory based on configured version of Skyrim
 if(${SKYRIM_AE})
