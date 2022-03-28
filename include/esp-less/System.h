@@ -72,12 +72,10 @@ namespace ESPLess {
             auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
             scriptEvents->AddEventSink<RE::TESActorLocationChangeEvent>(new OnActorLocationChangeEventSink([](const RE::TESActorLocationChangeEvent* event){
                 if (event->actor->formID == 20) { // The player reference
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("Player new location '{}'", event->newLoc->GetName()).c_str());
                     System::GetSingleton().Reload();
                 }
             }));
             scriptEvents->AddEventSink<RE::TESCellFullyLoadedEvent>(new OnCellFullyLoadedEventSink([](const RE::TESCellFullyLoadedEvent* event){
-                RE::ConsoleLog::GetSingleton()->Print(std::format("Cell loaded {}", event->cell->GetName()).c_str());
                 System::GetSingleton().Reload();
             }));
             SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){

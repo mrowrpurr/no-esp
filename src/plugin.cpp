@@ -4,10 +4,12 @@
 #pragma warning(pop)
 
 #include "esp-less/System.h"
+#include "esp-less/PapyrusInterface.h"
 
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
     ESPLess::System::ListenForEvents();
+    SKSE::GetPapyrusInterface()->Register(ESPLess::PapyrusInterface::BIND);
     return true;
 }
 

@@ -5,11 +5,8 @@ scriptName BindScript hidden
 function _vscode_hack()
 endFunction
 
-function ToObject(string theScriptName, ObjectReference obj) global native
+function ToForm(string theScriptName, Form theForm, bool addOnce = false) global native
 {...}
 
-function ToEditorId(string theScriptName, string editorId) global native
-{...}
-
-function ToFormId(string theScriptName, int formId, string optionalPluginFile = "")
+function ToEditorId(string theScriptName, string editorId, bool addOnce = false) global native
 {...}
