@@ -99,7 +99,7 @@ namespace ESPLess::PapyrusScriptBindings {
             if (def.Filename.empty()) {
                 RE::ConsoleLog::GetSingleton()->Print(std::format("[Bindings] Bind() error {} {}", def.EditorID, def.FormID).c_str());
             } else {
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Bind() error {}:{}", def.Filename, def.ID).c_str());
+                RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Bind() error {}", def.Filename).c_str());
             }
         }
     }

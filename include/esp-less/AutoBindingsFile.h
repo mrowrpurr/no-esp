@@ -31,47 +31,39 @@ namespace ESPLess::AutoBindingsFile {
 
         BindingDefinition ParseLine(const std::string& line) {
             // TODO require a unique identifier per script (unique per file)
-            static auto scriptNameWithPluginFormID = std::regex(R"(^([^\s]+)\s([^\s]+)\s+0x([^\s]+)\s+([^\s]+)$)");
-            static auto scriptNameWithSkyrimFormID = std::regex(R"(^([^\s]+)\s([^\s]+)\s+0x([^\s]+)$)");
-            static auto scriptNameWithEditorID = std::regex(R"(^([^\s]+)\s([^\s]+)\s+([^\s]+)$)");
-            static auto scriptNameOnly = std::regex(R"(^([^\s]+)\s([^\s]+)$)");
+            static auto scriptNameWithPluginFormID = std::regex(R"(^([^\s]+)\s+0x([^\s]+)\s+([^\s]+)$)");
+            static auto scriptNameWithSkyrimFormID = std::regex(R"(^([^\s]+)\s+0x([^\s]+)$)");
+            static auto scriptNameWithEditorID = std::regex(R"(^([^\s]+)\s+([^\s]+)$)");
+            static auto scriptNameOnly = std::regex(R"(^([^\s]+)$)");
             BindingDefinition entry;
             std::smatch matches;
             try {
                 if (std::regex_search(line, matches, scriptNameWithPluginFormID)) {
                     entry.Type = BindingDefinitionType::FormID;
-                    entry.ID = matches[1].str();
-                    entry.ScriptName = matches[2].str();
-                    auto formIdHex = matches[3].str();
+                    entry.ScriptName = matches[1].str();
+                    auto formIdHex = matches[2].str();
                     try {
                         entry.FormID = std::stoi("0x" + formIdHex, nullptr, 16);
                     } catch (...) {
                         RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Invalid FormID '0x{}'", formIdHex).c_str());
                     }
-                    entry.Plugin = matches[4].str();
+                    entry.Plugin = matches[3].str();
                 } else if (std::regex_search(line, matches, scriptNameWithSkyrimFormID)) {
                     entry.Type = BindingDefinitionType::FormID;
-                    entry.ID = matches[1].str();
-                    entry.ScriptName = matches[2].str();
-                    auto formIdHex = matches[3].str();
+                    entry.ScriptName = matches[1].str();
+                    auto formIdHex = matches[2].str();
                     entry.FormID = std::stoi(formIdHex, nullptr, 16);
                 } else if (std::regex_search(line, matches, scriptNameWithEditorID)) {
                     entry.Type = BindingDefinitionType::EditorID;
-                    entry.ID = matches[1].str();
-                    entry.ScriptName = matches[2].str();
-                    entry.EditorID = matches[3].str();
+                    entry.ScriptName = matches[1].str();
+                    entry.EditorID = matches[2].str();
                 } else if (std::regex_search(line, matches, scriptNameOnly)) {
                     entry.Type = BindingDefinitionType::FormID;
-                    entry.ID = matches[1].str();
-                    entry.ScriptName = matches[2].str();
+                    entry.ScriptName = matches[3].str();
                     entry.FormID = 20; // 0x14 which is the PlayerRef
                 }
             } catch (...) {
                 RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Error parsing line: '{}'", line).c_str());
-            }
-            if (entry.ID == "*") {
-                entry.ID = "";
-                entry.AddOnce = true;
             }
             return entry;
         }
