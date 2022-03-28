@@ -4,7 +4,7 @@
 - [x] Test that scripts are still attached after a save game
 - [x] Support finding forms from other mods
 - [x] Bind by calling Papyrus function to Bind a script to an Object
-- [ ] Remove '*'
+- [x] Remove '*'
 - [ ] Skyrim SE + VR + AE
 - [ ] Release on Nexus
 
