@@ -4,7 +4,7 @@
 
 #include "PapyrusScriptBindings.h"
 
-namespace ESPLess::PapyrusInterface {
+namespace ScriptsWithoutESP::PapyrusInterface {
 
     void BindScript_ToForm(RE::StaticFunctionTag*, std::string scriptName, RE::TESForm* form, bool addOnce = false) {
         PapyrusScriptBindings::BindToForm(scriptName, form, addOnce);

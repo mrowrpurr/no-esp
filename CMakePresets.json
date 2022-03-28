@@ -6,8 +6,8 @@
       "description": "For more information: http://aka.ms/cmakepresetsvs",
       "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "environment": {
         "VCPKG_FEATURE_FLAGS": "manifests,versions,binarycaching,registries"
@@ -113,6 +113,48 @@
       ],
       "displayName": "vs2022-windows RELEASE",
       "toolset": "v143"
+    },
+    {
+      "name": "vs2022-windows-debug-ae",
+      "inherits": [ "vs2022-windows-debug", "vcpkg", "windows" ],
+      "cacheVariables": {
+        "SKYRIM_AE": "ON",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "STRING",
+          "value": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "toolchainFile": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "${sourceDir}/build/AE",
+      "installDir": "${sourceDir}/install/AE"
+    },
+    {
+      "name": "vs2022-windows-debug-se",
+      "inherits": [ "vs2022-windows-debug", "vcpkg", "windows" ],
+      "cacheVariables": {
+        "SKYRIM_SE": "ON",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "STRING",
+          "value": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "toolchainFile": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "${sourceDir}/build/SE",
+      "installDir": "${sourceDir}/install/SE"
+    },
+    {
+      "name": "vs2022-windows-debug-vr",
+      "inherits": [ "vs2022-windows-debug", "vcpkg", "windows" ],
+      "cacheVariables": {
+        "SKYRIM_VR": "ON",
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "STRING",
+          "value": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "toolchainFile": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake",
+      "binaryDir": "${sourceDir}/build/VR",
+      "installDir": "${sourceDir}/install/VR"
     }
   ],
   "buildPresets": [
@@ -127,6 +169,24 @@
       "displayName": "Debug",
       "configurePreset": "vs2022-windows-debug",
       "description": "Debug build for testing."
+    },
+    {
+      "name": "Debug - AE",
+      "displayName": "Debug - AE",
+      "configurePreset": "vs2022-windows-debug-ae",
+      "description": "AE"
+    },
+    {
+      "name": "Debug - SE",
+      "displayName": "Debug - SE",
+      "configurePreset": "vs2022-windows-debug-se",
+      "description": "SE"
+    },
+    {
+      "name": "Debug - VR",
+      "displayName": "Debug - VR",
+      "configurePreset": "vs2022-windows-debug-vr",
+      "description": "VR"
     }
   ]
 }

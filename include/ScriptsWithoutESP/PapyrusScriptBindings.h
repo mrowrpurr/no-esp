@@ -12,7 +12,7 @@
 using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
 
-namespace ESPLess::PapyrusScriptBindings {
+namespace ScriptsWithoutESP::PapyrusScriptBindings {
 
     void BindToForm(const std::string& scriptName, RE::TESForm* form, bool addOnce = false) {
         try {

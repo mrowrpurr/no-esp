@@ -3,7 +3,7 @@
 #include <functional>
 #include <utility>
 
-//#include <RE/T/TESActorLocationChangeEvent.h>
+#ifdef SKYRIM_AE
 namespace RE
 {
 	class BGSLocation;
@@ -19,8 +19,11 @@ namespace RE
 	};
 	static_assert(sizeof(TESActorLocationChangeEvent) == 0x18);
 }
+#else
+#include <RE/T/TESActorLocationChangeEvent.h>
+#endif
 
-namespace ESPLess {
+namespace ScriptsWithoutESP {
 
     class OnActorLocationChangeEventSink : public RE::BSTEventSink<RE::TESActorLocationChangeEvent> {
         std::function<void(const RE::TESActorLocationChangeEvent* event)> _eventCallback;

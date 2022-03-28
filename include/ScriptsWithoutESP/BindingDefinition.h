@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ESPLess {
+namespace ScriptsWithoutESP {
 
     enum BindingDefinitionType { EditorID, FormID, Invalid };
 

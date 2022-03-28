@@ -8,6 +8,8 @@
     "supports": "windows & x64",
     "dependencies": [
         { "name": "vcpkg-cmake-config", "host": true },
-        "commonlibae"
+        "boost-stl-interfaces",
+        "rsm-binary-io",
+        "spdlog"
     ]
 }

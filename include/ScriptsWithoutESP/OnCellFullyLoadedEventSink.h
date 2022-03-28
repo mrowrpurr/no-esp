@@ -5,7 +5,7 @@
 
 #include <RE/T/TESCellFullyLoadedEvent.h>
 
-namespace ESPLess {
+namespace ScriptsWithoutESP {
 
     class OnCellFullyLoadedEventSink : public RE::BSTEventSink<RE::TESCellFullyLoadedEvent> {
         std::function<void(const RE::TESCellFullyLoadedEvent* event)> _eventCallback;

@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
 
-namespace ESPLess {
+namespace ScriptsWithoutESP {
 
     class System {
         std::atomic<bool> _loaded;
@@ -31,7 +31,8 @@ namespace ESPLess {
         void Load() {
             if (! _loaded.exchange(true)) {
                 AutoBindingsFile::Read([](const BindingDefinition& entry){
-                    ESPLess::PapyrusScriptBindings::Bind(entry);
+                    RE::ConsoleLog::GetSingleton()->Print(std::format("ENTRY {}", entry.ScriptName).c_str());
+                    ScriptsWithoutESP::PapyrusScriptBindings::Bind(entry);
                 });
             }
         }
