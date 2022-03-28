@@ -1,0 +1,18 @@
+[submodule "vcpkg/AE"]
+	path = vcpkg/AE
+	url = https://github.com/microsoft/vcpkg.git
+[submodule "vcpkg/SE"]
+	path = vcpkg/SE
+	url = https://github.com/microsoft/vcpkg.git
+[submodule "vcpkg/VR"]
+	path = vcpkg/VR
+	url = https://github.com/microsoft/vcpkg.git
+[submodule "CommonLib/SE"]
+	path = CommonLib/SE
+	url = https://github.com/powerof3/CommonLibSSE.git
+[submodule "CommonLib/AE"]
+	path = CommonLib/AE
+	url = https://github.com/powerof3/CommonLibSSE.git
+[submodule "CommonLib/VR"]
+	path = CommonLib/VR
+	url = https://github.com/mrowrpurr/CommonLibVR.git
