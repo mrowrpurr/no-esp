@@ -5,8 +5,12 @@
 - [x] Support finding forms from other mods
 - [x] Bind by calling Papyrus function to Bind a script to an Object
 - [x] Remove '*'
-- [ ] Skyrim SE + VR + AE
-- [ ] Release on Nexus
+- [x] Skyrim SE + VR + AE
+- [x] Release on Nexus
+- [ ] Support `;` and `#` and `//` comments in the AutoBinding files (strip them out, incl on the same line `Script 0x123 # foo`
+- [ ] Fill properties via `ScriptName:SomeProperty 0x123 [plugin.esp]`
+- [ ] Autobind based on Keyword
+- [ ] Autobind based on FormList 
 
 ## Later:
 - [ ] Skyrim LE
