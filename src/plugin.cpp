@@ -1,14 +1,4 @@
-#include <format>
-
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-
-#include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
-
-#include <spdlog/sinks/basic_file_sink.h>
-#include <xbyak/xbyak.h>
-#include <SimpleIni.h>
 
 namespace logger = SKSE::log;
 namespace string = SKSE::stl::string;
@@ -23,9 +13,6 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
             ScriptsWithoutESP::System::Start();
             System::ListenForReferences();
-            //System::ListenForObjectLoading();
-            //System::ListenForFirstLocationLoad();
-            //System::ListenForCellLoadEvents();
             SKSE::GetPapyrusInterface()->Register(ScriptsWithoutESP::PapyrusInterface::BIND);
         } else if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPostLoadGame) {
             System::GetSingleton().BindFormIdsToScripts();
@@ -33,7 +20,7 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
     });
     return true;
 }
-//
+
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface*, SKSE::PluginInfo* info) {
     info->infoVersion = SKSE::PluginInfo::kVersion;
     info->name = "ScriptsWithoutESP";

@@ -11,8 +11,6 @@
 #include "Log.h"
 #include "AutoBindingsFile.h"
 #include "OnActorLocationChangeEventSink.h"
-#include "OnCellFullyLoadedEventSink.h"
-#include "OnObjectLoadedEventSink.h"
 #include "PapyrusScriptBindings.h"
 
 using namespace ScriptsWithoutESP;
@@ -73,10 +71,7 @@ namespace ScriptsWithoutESP {
             _baseFormIdsToScriptNames.try_emplace(formId, scriptName);
         }
 
-        std::unordered_map<RE::FormID, std::string> GetBaseFormIdsToScriptNames() { return _baseFormIdsToScriptNames; }
-
         void BindFormIdsToScripts() {
-            Log("BIND FORM IDS to SCRIPTS {}", _formIdsToScriptNames.size());
             for (const auto& [formId, scriptName] : _formIdsToScriptNames) {
                 PapyrusScriptBindings::BindToFormId(scriptName, formId);
             }
@@ -89,9 +84,7 @@ namespace ScriptsWithoutESP {
             static void thunk(RE::TESObjectREFR* ref) {
                 auto& system = System::GetSingleton();
                 auto* baseForm = ref->GetBaseObject();
-                Log("We're looking for {} things", system.GetBaseFormIdsToScriptNames().size());
                 if (system.ShouldBindScriptToBaseForm(baseForm->formID)) {
-                    Log("--> OMG MAGIC WTF {} {}", baseForm->GetName(), ref->GetName());
                     auto scriptName = system.ScriptForBaseForm(baseForm->formID);
                     PapyrusScriptBindings::BindToFormId(scriptName, ref->formID);
                 }
@@ -103,24 +96,6 @@ namespace ScriptsWithoutESP {
 
         static void ListenForReferences() {
             vfunc<RE::TESObjectREFR, OnObjectInitialization>();
-        }
-
-        static void ListenForObjectLoading() {
-            auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
-            scriptEvents->AddEventSink<RE::TESObjectLoadedEvent>(new OnObjectLoadedEventSink([](const RE::TESObjectLoadedEvent* event){
-                auto& system = System::GetSingleton();
-                auto* form = RE::TESForm::LookupByID(event->formID);
-                auto* ref = form->AsReference();
-                Log("FORM {}", form->GetName());
-                if (ref) {
-                    Log("REFERENCE {} {}", form->GetName(), ref->GetName());
-                    auto* baseForm = ref->GetBaseObject();
-                    if (system.ShouldBindScriptToBaseForm(baseForm->formID)) {
-                        auto scriptName = system.ScriptForBaseForm(baseForm->formID);
-                        PapyrusScriptBindings::BindToForm(scriptName, form);
-                    }
-                }
-            }));
         }
 
         static void ListenForFirstLocationLoad() {
@@ -135,33 +110,8 @@ namespace ScriptsWithoutESP {
             }));
         }
 
-        static void ListenForCellLoadEvents() {
-            auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
-            scriptEvents->AddEventSink<RE::TESCellFullyLoadedEvent>(new OnCellFullyLoadedEventSink([](const RE::TESCellFullyLoadedEvent* event){
-                Log("CELL LOAD {}", event->cell->GetName());
-                 auto& system = System::GetSingleton();
-                const auto& [map, lock] = RE::TESForm::GetAllForms();
-                Log("ALL FORMS: {}", map->size());
-                for (auto iterator = map->begin(); iterator != map->end(); ++iterator) {
-                    auto* ref = iterator->second->AsReference();
-                    if (ref) {
-                        auto* baseForm = ref->GetBaseObject();
-                        Log("--> REFERENCE {} {} (looking for {})", baseForm->GetName(), ref->GetName(), system.GetBaseFormIdsToScriptNames().size());
-                        if (system.ShouldBindScriptToBaseForm(baseForm->formID)) {
-                            Log("--> BIND REFERENCE {} {}", baseForm->GetName(), ref->GetName());
-                            auto scriptName = system.ScriptForBaseForm(baseForm->formID);
-                            PapyrusScriptBindings::BindToFormId(scriptName, ref->formID);
-                        }
-                    }
-                }
-                Log("ALL FORMS: {}", map->size());
-            }));
-        }
-
         static void Start() {
-            Log("START");
             AutoBindingsFile::Read([](const BindingDefinition& entry){
-                Log("ENTRY {} {}", entry.Filename, entry.ScriptName);
                 RE::TESForm* form = nullptr;
                 if (entry.Type == BindingDefinitionType::FormID && entry.Plugin.empty()) {
                     form = RE::TESForm::LookupByID(entry.FormID);

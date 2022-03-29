@@ -3,25 +3,7 @@
 #include <functional>
 #include <utility>
 
-//#ifdef SKYRIM_AE
-//namespace RE
-//{
-//	class BGSLocation;
-//	class TESObjectREFR;
-//
-//	struct TESActorLocationChangeEvent
-//	{
-//	public:
-//		// members
-//		NiPointer<TESObjectREFR> actor;
-//		BGSLocation*             oldLoc;
-//		BGSLocation*             newLoc;
-//	};
-//	static_assert(sizeof(TESActorLocationChangeEvent) == 0x18);
-//}
-//#else
 #include <RE/T/TESActorLocationChangeEvent.h>
-//#endif
 
 namespace ScriptsWithoutESP {
 
