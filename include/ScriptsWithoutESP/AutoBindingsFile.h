@@ -70,6 +70,9 @@ namespace ScriptsWithoutESP::AutoBindingsFile {
     }
 
     void Read(std::function<void(const BindingDefinition& entry)> entryCallback, const std::string& bindingFilesDirectory = "Data/Scripts/AutoBindings") {
+        if (! std::filesystem::is_directory(bindingFilesDirectory))
+            return;
+
         for (auto& file : std::filesystem::directory_iterator(bindingFilesDirectory)) {
             if (file.is_regular_file()) {
                 try {
