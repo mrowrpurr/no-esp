@@ -56,6 +56,7 @@ namespace ScriptsWithoutESP::PapyrusScriptBindings {
     }
 
     void BindToFormId(const std::string& scriptName, int formId, const std::string optionalPluginFile = "", bool addOnce = false) {
+        Log("BindToFormId {} {} {}", scriptName, formId, optionalPluginFile);
         if (optionalPluginFile.empty()) {
             auto* form = RE::TESForm::LookupByID(formId);
             if (form) {

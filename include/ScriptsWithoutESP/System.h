@@ -4,13 +4,16 @@
 #include <chrono>
 
 #include <RE/C/ConsoleLog.h>
+#include <RE/T/TESDataHandler.h>
 
+#include "Log.h"
 #include "AutoBindingsFile.h"
 #include "OnActorLocationChangeEventSink.h"
 #include "OnCellFullyLoadedEventSink.h"
 #include "OnObjectLoadedEventSink.h"
 #include "PapyrusScriptBindings.h"
 
+using namespace ScriptsWithoutESP;
 using namespace std::chrono_literals;
 using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
@@ -18,7 +21,6 @@ using namespace RE::BSScript::Internal;
 namespace ScriptsWithoutESP {
 
     class System {
-        std::atomic<bool> _loaded;
 
         // [Generic Forms]
         // This is taken directly from the AutoBindings and maps to whatever is defined in the file.
@@ -45,41 +47,68 @@ namespace ScriptsWithoutESP {
             return system;
         }
 
-        void Load() {
-            if (! _loaded.exchange(true)) {
-                AutoBindingsFile::Read([](const BindingDefinition& entry){
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("ENTRY {}", entry.ScriptName).c_str());
-                    ScriptsWithoutESP::PapyrusScriptBindings::Bind(entry);
-                });
+        void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) {
+            _formIdsToScriptNames.try_emplace(formId, scriptName);
+        }
+
+        void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName) {
+            _baseFormIdsToScriptNames.try_emplace(formId, scriptName);
+        }
+
+        void BindFormIdsToScripts() {
+            Log("BIND FORM IDS to SCRIPTS {}", _formIdsToScriptNames.size());
+            for (const auto& [formId, scriptName] : _formIdsToScriptNames) {
+                PapyrusScriptBindings::BindToFormId(scriptName, formId);
             }
         }
 
-        void Reload() {
-            _loaded = false;
-            Load();
+        static void ListenForEvents() {
+//            SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){
+//                if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPostLoadGame) {
+//                    Log("NEW GAME or LOAD GAME");
+//                    System::GetSingleton().BindFormIdsToScripts();
+//                }
+//            });
+//            auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
+//            scriptEvents->AddEventSink<RE::TESActorLocationChangeEvent>(new OnActorLocationChangeEventSink([](const RE::TESActorLocationChangeEvent* event){
+//                if (event->actor->formID == 20) { // The player reference
+//                    System::GetSingleton().Reload();
+//                }
+//            }));
+//            scriptEvents->AddEventSink<RE::TESCellFullyLoadedEvent>(new OnCellFullyLoadedEventSink([](const RE::TESCellFullyLoadedEvent* event){
+//                System::GetSingleton().Reload();
+//            }));
+//            scriptEvents->AddEventSink<RE::TESObjectLoadedEvent>(new OnObjectLoadedEventSink([](const RE::TESObjectLoadedEvent* event){
+//                auto* form = RE::TESForm::LookupByID(event->formID);
+//                auto* ref = form->AsReference();
+//                if (ref) {
+//                    auto* baseForm = ref->GetBaseObject();
+//                    RE::ConsoleLog::GetSingleton()->Print(std::format("Object Loaded {}", baseForm->GetName()).c_str());
+//                }
+//            }));
         }
 
-        static void ListenForEvents() {
-            auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
-            scriptEvents->AddEventSink<RE::TESActorLocationChangeEvent>(new OnActorLocationChangeEventSink([](const RE::TESActorLocationChangeEvent* event){
-                if (event->actor->formID == 20) { // The player reference
-                    System::GetSingleton().Reload();
+        static void Start() {
+            Log("START");
+            AutoBindingsFile::Read([](const BindingDefinition& entry){
+                Log("ENTRY {} {}", entry.Filename, entry.ScriptName);
+                RE::TESForm* form;
+                if (entry.Type == BindingDefinitionType::FormID && entry.Plugin.empty()) {
+                    form = RE::TESForm::LookupByID(entry.FormID);
+                    if (! form) Log("({}:{}) Form not found: '{:x}'", entry.Filename, entry.ScriptName, entry.FormID);
+                } else if (entry.Type == BindingDefinitionType::FormID && ! entry.Plugin.empty()) {
+                    form = RE::TESDataHandler::GetSingleton()->LookupForm(entry.FormID, entry.Plugin);
+                    if (!form) Log("({}:{}) Form not found from plugin '{}': '{:x}'", entry.Filename, entry.ScriptName, entry.Plugin, entry.FormID);
+                } else if (entry.Type == BindingDefinitionType::EditorID) {
+                    form = RE::TESForm::LookupByEditorID(entry.EditorID);
+                    if (! form) Log("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorID);
                 }
-            }));
-            scriptEvents->AddEventSink<RE::TESCellFullyLoadedEvent>(new OnCellFullyLoadedEventSink([](const RE::TESCellFullyLoadedEvent* event){
-                System::GetSingleton().Reload();
-            }));
-            scriptEvents->AddEventSink<RE::TESObjectLoadedEvent>(new OnObjectLoadedEventSink([](const RE::TESObjectLoadedEvent* event){
-                auto* form = RE::TESForm::LookupByID(event->formID);
-                auto* ref = form->AsReference();
-                if (ref) {
-                    auto* baseForm = ref->GetBaseObject();
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("Object Loaded {}", baseForm->GetName()).c_str());
-                }
-            }));
-            SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){
-                if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPostLoadGame) {
-                    System::GetSingleton().Reload();
+                if (form) {
+                    auto& system = System::GetSingleton();
+                    system.AddFormIdForScript(form->formID, entry.ScriptName);
+                    if (! form->AsReference()) {
+                        system.AddBaseFormIdForScript(entry.FormID, entry.ScriptName);
+                    }
                 }
             });
         }
