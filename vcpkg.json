@@ -7,9 +7,14 @@
     "license": "MIT",
     "supports": "windows & x64",
     "dependencies": [
-        { "name": "vcpkg-cmake-config", "host": true },
         "boost-stl-interfaces",
-        "rsm-binary-io",
-        "spdlog"
+        "simpleini",
+        "spdlog",
+        "xbyak",
+        "rsm-binary-io"
+    ],
+    "builtin-baseline":"bba8794b82a0f44b8709f294850a2c8e96b61415",
+    "overrides": [
+        { "name": "fmt", "version": "8.0.1" }
     ]
 }

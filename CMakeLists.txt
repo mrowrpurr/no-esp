@@ -1,139 +1,290 @@
-cmake_minimum_required(VERSION 3.21)
-
-project(scripts-without-esp VERSION 0.0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.20)
+set(NAME "scripts-with-esp")
+set(VERSION 1.0.0)
+set(VR_VERSION 1)
+set(AE_VERSION 1)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Project files
-file(GLOB_RECURSE scripts-without-esp_Files src/*.cpp include/*.h)
 
-# Define your SKSE plugin
-add_library(scripts-without-esp SHARED ${scripts-without-esp_Files})
+# ---- Options ----
 
-# Setup includes
-target_include_directories(scripts-without-esp PRIVATE include)
+option(COPY_BUILD "Copy the build output to the Skyrim directory." TRUE)
+option(BUILD_SKYRIMVR "Build for Skyrim VR" OFF)
+option(BUILD_SKYRIMAE "Build for Skyrim AE" OFF)
 
-#################################
+# ---- Cache build vars ----
 
-# Add options for specifying the version
-# Only one version may be provided at a time
-option(SKYRIM_AE "Compile plugin for Skyrim AE" ON)
-option(SKYRIM_SE "Compile plugin for Skyrim SE" OFF)
-option(SKYRIM_VR "Compile plugin for Skyrim VR" OFF)
+macro(set_from_environment VARIABLE)
+	if (NOT DEFINED ${VARIABLE} AND DEFINED ENV{${VARIABLE}})
+		set(${VARIABLE} $ENV{${VARIABLE}})
+	endif ()
+endmacro()
 
-# Exit if no Skyrim version was specified
-if(NOT ${SKYRIM_AE} AND NOT ${SKYRIM_SE} AND NOT ${SKYRIM_VR})
-	message(FATAL_ERROR "Run cmake using one of the build/ .bat files for building Skyrim")
-	return()
+macro(find_commonlib_path)
+	if (CommonLibName AND NOT ${CommonLibName} STREQUAL "")
+		# Check extern
+		find_path(CommonLibPath
+		include/REL/Relocation.h
+		PATHS CommonLib/AE)
+		if (${CommonLibPath} STREQUAL "CommonLibPath-NOTFOUND")
+			#Check path
+			set_from_environment(${CommonLibName}Path)
+			set(CommonLibPath ${${CommonLibName}Path})
+		endif()
+	endif()
+endmacro()
+
+set_from_environment(VCPKG_ROOT)
+if(BUILD_SKYRIMAE)
+	add_compile_definitions(SKYRIM_AE)
+	set(CommonLibName "CommonLibSSE")
+	set_from_environment(SkyrimAEPath)
+	set(SkyrimPath ${SkyrimAEPath})
+	set(SkyrimVersion "Skyrim AE")
+	set(VERSION ${VERSION}.${AE_VERSION})
+elseif(BUILD_SKYRIMVR)
+	add_compile_definitions(SKYRIMVR)
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+	set(CommonLibName "CommonLibVR")
+	set_from_environment(SkyrimVRPath)
+	set(SkyrimPath ${SkyrimVRPath})
+	set(SkyrimVersion "Skyrim VR")
+	set(VERSION ${VERSION}.${VR_VERSION})
+else()
+	set(CommonLibName "CommonLibSSE")
+	set_from_environment(Skyrim64Path)
+	set(SkyrimPath ${Skyrim64Path})
+	set(SkyrimVersion "Skyrim SSE")
+endif()
+find_commonlib_path()
+message(
+	STATUS
+	"Building ${NAME} ${VERSION} for ${SkyrimVersion} at ${SkyrimPath} with ${CommonLibName} at ${CommonLibPath}."
+)
+
+
+if (DEFINED VCPKG_ROOT)
+	set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+	set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
+else ()
+	message(
+		WARNING
+		"Variable VCPKG_ROOT is not set. Continuing without vcpkg."
+	)
+endif ()
+
+set(Boost_USE_STATIC_RUNTIME OFF CACHE BOOL "")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "")
+
+# ---- Project ----
+
+project(scripts-without-esp VERSION 0.0.1 LANGUAGES CXX)
+
+#configure_file(
+#	${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in
+#	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
+#	@ONLY
+#)
+#
+#configure_file(
+#	${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
+#	${CMAKE_CURRENT_BINARY_DIR}/version.rc
+#	@ONLY
+#)
+
+# ---- Include guards ----
+
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+	message(
+		FATAL_ERROR
+			"In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
+	)
 endif()
 
-# Add support for #ifdef for SKYRIM_AE, SKYRIM_SE, and SKYRIM_VR
-if(${SKYRIM_AE})
-	message(INFO "Building CMake setup for Skyrim AE: ${SKYRIM_AE}")
-	add_definitions(-DSKYRIM_AE)
-	set(SKYRIM_VERSION AE)
-elseif(${SKYRIM_SE})
-	message(INFO "Building CMake setup for Skyrim SE: ${SKYRIM_SE}")
-	add_definitions(-DSKYRIM_SE)
-	set(SKYRIM_VERSION SE)
-elseif(${SKYRIM_VR})
-	message(INFO "Building CMake setup for Skyrim VR: ${SKYRIM_VR}")
-	add_definitions(-DSKYRIM_VR)
-	set(SKYRIM_VERSION VR)
+# ---- Globals ----
+
+add_compile_definitions(
+	SKSE_SUPPORT_XBYAK
+)
+if (BUILD_SKYRIMAE)
+	add_compile_definitions(
+		SKYRIM_SUPPORT_AE
+	)
 endif()
 
-message(INFO "Skyrim Version: ${SKYRIM_VERSION}")
+if (MSVC)
+	add_compile_definitions(
+		_UNICODE
+	)
+	if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
+		add_compile_options(
+			/MP	# Build with Multiple Processes
+		)
+	endif ()
+endif ()
 
-###############
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
 
-# Compile with C++20 features
+set(Boost_USE_STATIC_LIBS ON)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "")
+
+# ---- Dependencies ----
+
+set(CommonLibSSEPath ${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/AE)
+
+if (DEFINED CommonLibSSEPath AND NOT ${CommonLibSSEPath} STREQUAL "" AND IS_DIRECTORY ${CommonLibSSEPath})
+	add_subdirectory(${CommonLibSSEPath} CommonLibSSE)
+else ()
+	message(
+		FATAL_ERROR
+		"Variable CommonLibSSEPath is not set."
+	)
+endif ()
+
+find_package(spdlog REQUIRED CONFIG)
+find_package(xbyak REQUIRED CONFIG)
+
+find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
+
+# ---- Add source files ----
+
+file(GLOB_RECURSE sources src/*.cpp include/*.h)
+
+#source_group(
+#	TREE
+#		${CMAKE_CURRENT_SOURCE_DIR}
+#	FILES
+#		${headers}
+#		${sources}
+#)
+
+#source_group(
+#	TREE
+#		${CMAKE_CURRENT_BINARY_DIR}
+#	FILES
+#		${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
+#)
+
+# ---- Create DLL ----
+
+add_library(
+	${PROJECT_NAME}
+	SHARED
+	${headers}
+	${sources}
+)
 target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_23)
+target_include_directories(scripts-without-esp PRIVATE include)
+#	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
+#	${CMAKE_CURRENT_BINARY_DIR}/version.rc
+#	.clang-format
+# "src/aowMenu.cpp" "src/Events.cpp"  "src/Settings.h")
 
-# Include spdlog
-find_package(spdlog CONFIG REQUIRED)
-target_link_libraries("${PROJECT_NAME}" PUBLIC spdlog::spdlog)
-
-# CommonLib
-if(${SKYRIM_AE})
-	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/AE" CommonLibSSE EXCLUDE_FROM_ALL)
-    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
-elseif(${SKYRIM_SE})
-	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/SE" CommonLibSSE EXCLUDE_FROM_ALL)
-    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
-elseif(${SKYRIM_VR})
-	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/VR" CommonLibVR EXCLUDE_FROM_ALL)
-    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibVR::CommonLibVR)
-endif()
-
-# Get output directory based on configured version of Skyrim
-if(${SKYRIM_AE})
-	if(DEFINED ENV{SKSE_SKYRIM_AE_DEV})
-		set(MOD_FOLDER $ENV{SKSE_SKYRIM_AE_DEV})
-	elseif(DEFINED ENV{SKYRIM_MODS})
-		set(MOD_FOLDER "$ENV{SKYRIM_MODS}/${PROJECT_NAME} - ${SKYRIM_VERSION}")
-	else()
-		set(MOD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/output/${SKYRIM_VERSION}")
-	endif()
-elseif(${SKYRIM_SE})
-	if(DEFINED ENV{SKSE_SKYRIM_SE_DEV})
-		set(MOD_FOLDER $ENV{SKSE_SKYRIM_SE_DEV})
-	elseif(DEFINED ENV{SKYRIM_MODS})
-		set(MOD_FOLDER "$ENV{SKYRIM_MODS}/${PROJECT_NAME} - ${SKYRIM_VERSION}")
-	else()
-		set(MOD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/output/${SKYRIM_VERSION}")
-	endif()
-elseif(${SKYRIM_VR})
-	if(DEFINED ENV{SKSE_SKYRIM_VR_DEV})
-		set(MOD_FOLDER $ENV{SKSE_SKYRIM_VR_DEV})
-	elseif(DEFINED ENV{SKYRIM_MODS})
-		set(MOD_FOLDER "$ENV{SKYRIM_MODS}/${PROJECT_NAME} - ${SKYRIM_VERSION}")
-	else()
-		set(MOD_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/output/${SKYRIM_VERSION}")
-	endif()
-endif()
-
-set(DLL_FOLDER "${MOD_FOLDER}/SKSE/Plugins")
-
-# Create output directory if it does not exist
-add_custom_command(
-	TARGET "${PROJECT_NAME}"
-	POST_BUILD
-	COMMAND "${CMAKE_COMMAND}" -E make_directory "${DLL_FOLDER}"
-	VERBATIM
+target_compile_features(
+	${PROJECT_NAME}
+	PRIVATE
+		cxx_std_20
 )
 
-# Print the paths that files will be output to when the project is built
-message("Build will output .dll and .pdb to ${DLL_FOLDER}")
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Scripts")
-	message("Build will output Papyrus scripts to ${MOD_FOLDER}")
-endif()
-
-# Copy the output .dll and debug .pdb to the configured output directory
-add_custom_command(
-	TARGET "${PROJECT_NAME}"
-	POST_BUILD
-	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
-#	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
-	COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Scripts" "${MOD_FOLDER}/Scripts"
-	COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Source" "${MOD_FOLDER}/Source"
-	VERBATIM
+target_compile_definitions(
+	${PROJECT_NAME}
+	PRIVATE
+		_UNICODE
 )
 
-# Copy Scripts/ and/or Source/ if they are present (at prepare time)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Scripts")
-	add_custom_command(
-		TARGET "${PROJECT_NAME}"
-		POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Scripts" "${MOD_FOLDER}/Scripts"
-		VERBATIM
+target_include_directories(
+	${PROJECT_NAME}
+	PRIVATE
+		${CMAKE_CURRENT_BINARY_DIR}/include
+		${CMAKE_CURRENT_SOURCE_DIR}/src
+		${SIMPLEINI_INCLUDE_DIRS}
+)
+
+target_link_libraries(
+	${PROJECT_NAME}
+	PRIVATE
+		CommonLibSSE::CommonLibSSE
+		spdlog::spdlog
+		xbyak::xbyak
+)
+
+#target_precompile_headers(
+#	${PROJECT_NAME}
+#	PRIVATE
+#		src/PCH.h
+#)
+
+if (MSVC)
+	target_compile_options(
+		${PROJECT_NAME}
+		PRIVATE
+			/sdl	# Enable Additional Security Checks
+			/utf-8	# Set Source and Executable character sets to UTF-8
+			/Zi	# Debug Information Format
+
+			/permissive-	# Standards conformance
+
+			/Zc:alignedNew	# C++17 over-aligned allocation
+			/Zc:auto	# Deduce Variable Type
+			/Zc:char8_t
+			/Zc:__cplusplus	# Enable updated __cplusplus macro
+			/Zc:externC
+			/Zc:externConstexpr	# Enable extern constexpr variables
+			/Zc:forScope	# Force Conformance in for Loop Scope
+			/Zc:hiddenFriend
+			/Zc:implicitNoexcept	# Implicit Exception Specifiers
+			/Zc:lambda
+			/Zc:noexceptTypes	# C++17 noexcept rules
+			/Zc:preprocessor	# Enable preprocessor conformance mode
+			/Zc:referenceBinding	# Enforce reference binding rules
+			/Zc:rvalueCast	# Enforce type conversion rules
+			/Zc:sizedDealloc	# Enable Global Sized Deallocation Functions
+			/Zc:strictStrings	# Disable string literal type conversion
+			/Zc:ternary	# Enforce conditional operator rules
+			/Zc:threadSafeInit	# Thread-safe Local Static Initialization
+			/Zc:tlsGuards
+			/Zc:trigraphs	# Trigraphs Substitution
+			/Zc:wchar_t	# wchar_t Is Native Type
+
+			/external:anglebrackets
+			/external:W0
+
+			/W4	# Warning level
+
+			"$<$<CONFIG:DEBUG>:>"
+			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
 	)
-endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source")
-	add_custom_command(
-		TARGET "${PROJECT_NAME}"
-		POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Source" "${MOD_FOLDER}/Source"
-		VERBATIM
+
+	target_link_options(
+		${PROJECT_NAME}
+		PRIVATE
+			/WX	# Treat Linker Warnings as Errors
+
+			"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
+			"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
 	)
-endif()
+
+endif ()
+
+# ---- Post build ----
+
+set(Skyrim64Path "C:/Users/mrowr/Dropbox/Skyrim/Mod Authoring/Mods/scripts-without-esp - AE/")
+
+if (COPY_BUILD)
+	if (DEFINED Skyrim64Path)
+		add_custom_command(
+			TARGET ${PROJECT_NAME}
+			POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${Skyrim64Path}/SKSE/Plugins/
+			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> ${Skyrim64Path}/SKSE/Plugins/
+		)
+	else ()
+		message(
+			WARNING
+			"Variable Skyrim64Path is not defined. Skipping post-build copy command."
+		)
+	endif ()
+endif ()

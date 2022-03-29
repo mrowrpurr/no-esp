@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <string_view>
 #include <RE/C/ConsoleLog.h>
 
