@@ -7,10 +7,19 @@
 - [x] Remove '*'
 - [x] Skyrim SE + VR + AE
 - [x] Release on Nexus
+- [ ] On first location load (aka coc) IF NOT A NEW GAME then load ALL THE THINGS
 - [ ] Support `;` and `#` and `//` comments in the AutoBinding files (strip them out, incl on the same line `Script 0x123 # foo`
 - [ ] Fill properties via `ScriptName:SomeProperty 0x123 [plugin.esp]`
 - [ ] Autobind based on Keyword
-- [ ] Autobind based on FormList 
+- [ ] Autobind based on FormList
+- [ ] Add .ini file support
+  - [ ] Can toggle logs on and off
+  - [ ] Can toggle coc support ON (default: off)
+- [ ] Document the Papyrus functions
+- [ ] Release Update on Nexus
+
+## Optional:
+- [ ] Papyrus function which will reprocess every form in the game for script attachment
 
 ## Later:
 - [ ] Skyrim LE

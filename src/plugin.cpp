@@ -13,9 +13,12 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
             ScriptsWithoutESP::System::Start();
             System::ListenForReferences();
+            System::ListenForFirstLocationLoad();
             SKSE::GetPapyrusInterface()->Register(ScriptsWithoutESP::PapyrusInterface::BIND);
         } else if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPostLoadGame) {
-            System::GetSingleton().BindFormIdsToScripts();
+            auto& system = System::GetSingleton();
+            system.SetLoaded();
+            system.BindFormIdsToScripts();
         }
     });
     return true;

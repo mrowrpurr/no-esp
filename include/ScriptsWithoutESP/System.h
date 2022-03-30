@@ -61,7 +61,7 @@ namespace ScriptsWithoutESP {
         }
 
         bool IsLoadedOrSetLoaded() { return _loaded.exchange(true); }
-        void SetLoaded(bool value) { _loaded = value; }
+        void SetLoaded(bool value = true) { _loaded = value; }
 
         void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) {
             _formIdsToScriptNames.try_emplace(formId, scriptName);
@@ -86,7 +86,7 @@ namespace ScriptsWithoutESP {
                 auto* baseForm = ref->GetBaseObject();
                 if (system.ShouldBindScriptToBaseForm(baseForm->formID)) {
                     auto scriptName = system.ScriptForBaseForm(baseForm->formID);
-                    PapyrusScriptBindings::BindToFormId(scriptName, ref->formID);
+                    PapyrusScriptBindings::BindToFormId(scriptName, ref->formID, "", true);
                 }
                 func(ref);
             }
@@ -98,6 +98,27 @@ namespace ScriptsWithoutESP {
             vfunc<RE::TESObjectREFR, OnObjectInitialization>();
         }
 
+        static void CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame() {
+            auto* console = RE::ConsoleLog::GetSingleton();
+            auto& system = System::GetSingleton();
+            const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
+            int i = 0;
+            for (auto iterator = literallyEveryFormInTheGame->begin(); iterator != literallyEveryFormInTheGame->end(); iterator++) {
+                i++;
+                if (i % 1000 == 0) {
+                    console->Print(std::format("{} Looking...", i).c_str());
+                }
+                auto* ref = iterator->second->AsReference();
+                if (ref) {
+                    auto* baseForm = ref->GetBaseObject();
+                    if (system.ShouldBindScriptToBaseForm(baseForm->formID)) {
+                        auto scriptName = system.ScriptForBaseForm(baseForm->formID);
+                        PapyrusScriptBindings::BindToFormId(scriptName, ref->formID, "", true);
+                    }
+                }
+            }
+        }
+
         static void ListenForFirstLocationLoad() {
             auto* scriptEvents = RE::ScriptEventSourceHolder::GetSingleton();
             scriptEvents->AddEventSink<RE::TESActorLocationChangeEvent>(new OnActorLocationChangeEventSink([](const RE::TESActorLocationChangeEvent* event){
@@ -105,6 +126,8 @@ namespace ScriptsWithoutESP {
                     auto& system = System::GetSingleton();
                     if (! system.IsLoadedOrSetLoaded()) {
                         System::GetSingleton().BindFormIdsToScripts();
+                        // Make this something you must turn ON in an .ini off by default:
+                        System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
                     }
                 }
             }));
