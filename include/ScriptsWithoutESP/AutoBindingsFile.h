@@ -31,10 +31,10 @@ namespace ScriptsWithoutESP::AutoBindingsFile {
 
         BindingDefinition ParseLine(const std::string& line) {
             // TODO require a unique identifier per script (unique per file)
-            static auto scriptNameWithPluginFormID = std::regex(R"(^([^\s]+)\s+0x([^\s]+)\s+([^\s]+)$)");
-            static auto scriptNameWithSkyrimFormID = std::regex(R"(^([^\s]+)\s+0x([^\s]+)$)");
-            static auto scriptNameWithEditorID = std::regex(R"(^([^\s]+)\s+([^\s]+)$)");
-            static auto scriptNameOnly = std::regex(R"(^([^\s]+)$)");
+            static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)");
+            static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)");
+            static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*$)");
+            static auto scriptNameOnly = std::regex(R"(^\s*([^\s]+)\s*$)");
             BindingDefinition entry;
             std::smatch matches;
             try {
@@ -80,9 +80,27 @@ namespace ScriptsWithoutESP::AutoBindingsFile {
                     std::istringstream stringStream(text);
                     for (std::string line; std::getline(stringStream, line); ) {
                         if (!line.empty()) {
+                            // Strip trailing \r from newline
                             if (line.ends_with("\r")) {
                                 line.erase(line.length() - 1);
                             }
+                            // Strip anything before comment
+                            size_t commentStartIndex = line.find('#');
+                            if (commentStartIndex != std::string::npos) {
+                                if (commentStartIndex == 0) line = "";
+                                else line = line.substr(0, commentStartIndex);
+                            }
+                            commentStartIndex = line.find(';');
+                            if (commentStartIndex != std::string::npos) {
+                                if (commentStartIndex == 0) line = "";
+                                else line = line.substr(0, commentStartIndex);
+                            }
+                            commentStartIndex = line.find("//");
+                            if (commentStartIndex != std::string::npos) {
+                                if (commentStartIndex == 0) line = "";
+                                else line = line.substr(0, commentStartIndex);
+                            }
+
                             auto entry = ParseLine(line);
                             if (entry.Type != BindingDefinitionType::Invalid) {
                                 entry.Filename = file.path().string();
