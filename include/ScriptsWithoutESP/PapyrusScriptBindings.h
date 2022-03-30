@@ -37,7 +37,13 @@ namespace ScriptsWithoutESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToForm(const std::string& scriptName, RE::TESForm* form, bool addOnce = false) {
+    void BindToForm(std::string scriptName, RE::TESForm* form, bool addOnce = false) {
+        bool autoFillProperties = true;
+        if (scriptName.starts_with('!')) {
+            autoFillProperties = false;
+            scriptName = scriptName.substr(1); // Remove '!'
+        }
+
         try {
             auto* vm = VirtualMachine::GetSingleton();
             auto* handlePolicy = vm->GetObjectHandlePolicy();
@@ -59,7 +65,9 @@ namespace ScriptsWithoutESP::PapyrusScriptBindings {
                 RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
                 vm->CreateObject(scriptName, objectPtr);
                 auto* bindPolicy = vm->GetObjectBindPolicy();
-                BindObjectProperties(objectPtr);
+                if (autoFillProperties) {
+                    BindObjectProperties(objectPtr);
+                }
                 bindPolicy->BindObject(objectPtr, handle);
                 RE::ConsoleLog::GetSingleton()->Print(std::format("[Bindings] Bound script '{}' to reference!", scriptName).c_str());
             } else {

@@ -29,13 +29,12 @@ namespace ScriptsWithoutESP::AutoBindingsFile {
             return result;
         }
 
-        BindingDefinition ParseLine(const std::string& line) {
-            // TODO require a unique identifier per script (unique per file)
+        BindingDefinition ParseLine(std::string line) {
+            BindingDefinition entry;
             static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)");
             static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)");
             static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*$)");
             static auto scriptNameOnly = std::regex(R"(^\s*([^\s]+)\s*$)");
-            BindingDefinition entry;
             std::smatch matches;
             try {
                 if (std::regex_search(line, matches, scriptNameWithPluginFormID)) {

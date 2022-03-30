@@ -42,7 +42,7 @@ namespace ScriptsWithoutESP {
         // [Generic Forms]
         // This is taken directly from the AutoBindings and maps to whatever is defined in the file.
         // The collections BELOW are inferred from these raw form bindings.
-        std::unordered_map<RE::FormID, std::string> _formIdsToScriptNames;
+        std::unordered_map<RE::FormID, std::set<std::string>> _formIdsToScriptNames;
 
         // [Base Forms]
         // Map reference base form IDs --> scripts to attach on object load
@@ -67,7 +67,15 @@ namespace ScriptsWithoutESP {
         bool IsLoadedOrSetLoaded() { return _loaded.exchange(true); }
         void SetLoaded(bool value = true) { _loaded = value; }
 
-        void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) { _formIdsToScriptNames.try_emplace(formId, scriptName); }
+        void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) {
+            if (_formIdsToScriptNames.contains(formId)) {
+                _formIdsToScriptNames[formId].insert(scriptName);
+            } else {
+                std::set<std::string> scriptNames{scriptName};
+                _formIdsToScriptNames.try_emplace(formId, scriptNames);
+            }
+        }
+
         void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName) {
             if (_baseFormIdsToScriptNames.contains(formId)) {
                 _baseFormIdsToScriptNames[formId].insert(scriptName);
@@ -94,8 +102,10 @@ namespace ScriptsWithoutESP {
         }
 
         void BindFormIdsToScripts() {
-            for (const auto& [formId, scriptName] : _formIdsToScriptNames) {
-                PapyrusScriptBindings::BindToFormId(scriptName, formId);
+            for (const auto& [formId, scriptNames] : _formIdsToScriptNames) {
+                for (const auto& scriptName : scriptNames) {
+                    PapyrusScriptBindings::BindToFormId(scriptName, formId);
+                }
             }
         }
 

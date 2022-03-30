@@ -5,7 +5,7 @@ namespace ScriptsWithoutESP {
     enum BindingDefinitionType { EditorID, FormID, Invalid };
 
     struct BindingDefinition {
-        bool AddOnce = true; // Currently, always true
+        bool AddOnce = true; // Currently ALWAYS set to trye
         std::string Filename;
         BindingDefinitionType Type = BindingDefinitionType::Invalid;
         std::string ScriptName;
