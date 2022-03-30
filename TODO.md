@@ -7,7 +7,7 @@
 - [x] Remove '*'
 - [x] Skyrim SE + VR + AE
 - [x] Release on Nexus
-- [ ] On first location load (aka coc) IF NOT A NEW GAME then load ALL THE THINGS
+- [x] On first location load (aka coc) IF NOT A NEW GAME then load ALL THE THINGS
 - [ ] Support `;` and `#` and `//` comments in the AutoBinding files (strip them out, incl on the same line `Script 0x123 # foo`
 - [ ] Fill properties via `ScriptName:SomeProperty 0x123 [plugin.esp]`
 - [ ] Autobind based on Keyword
@@ -19,7 +19,9 @@
 - [ ] Release Update on Nexus
 
 ## Optional:
-- [ ] Papyrus function which will reprocess every form in the game for script attachment
+- [ ] Papyrus function to get a Form by an Editor ID
+- [ ] Papyrus function which will process every form in the game for script attachment
+- [ ] Papyrus functiuon which will process every object near the player or an object or a point in space
 
 ## Later:
 - [ ] Skyrim LE
