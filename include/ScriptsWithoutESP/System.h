@@ -1,3 +1,5 @@
+//auto* keyword = form->As<RE::BGSKeyword>();
+
 #pragma once
 
 #include <atomic>
@@ -21,6 +23,8 @@ using namespace REL;
 using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
 
+// TODO: split into some lovely organized files <3
+
 namespace ScriptsWithoutESP {
 
     // From Base Object Swapper - play around, understand it, rewrite it in my style.
@@ -42,13 +46,13 @@ namespace ScriptsWithoutESP {
 
         // [Base Forms]
         // Map reference base form IDs --> scripts to attach on object load
-        std::unordered_map<RE::FormID, std::string> _baseFormIdsToScriptNames;
+        std::unordered_map<RE::FormID, std::set<std::string>> _baseFormIdsToScriptNames;
 
         // [Keywords]
-        std::unordered_map<RE::FormID, std::string> _keywordIdsToScriptNames;
+        std::unordered_map<RE::BGSKeyword*, std::set<std::string>> _keywordIdsToScriptNames;
 
         // [Form lists]
-        std::unordered_map<RE::FormID, std::string> _formListIdsToScriptNames;
+        std::unordered_map<RE::BGSListForm*, std::set<std::string>> _formListIdsToScriptNames;
 
         System() = default;
 
@@ -64,9 +68,30 @@ namespace ScriptsWithoutESP {
         void SetLoaded(bool value = true) { _loaded = value; }
 
         void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) { _formIdsToScriptNames.try_emplace(formId, scriptName); }
-        void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName) { _baseFormIdsToScriptNames.try_emplace(formId, scriptName); }
-        void AddKeywordIdForScript(RE::FormID formId, const std::string& scriptName) { _keywordIdsToScriptNames.try_emplace(formId, scriptName); }
-        void AddFormListIdForScript(RE::FormID formId, const std::string& scriptName) { _formListIdsToScriptNames.try_emplace(formId, scriptName); }
+        void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName) {
+            if (_baseFormIdsToScriptNames.contains(formId)) {
+                _baseFormIdsToScriptNames[formId].insert(scriptName);
+            } else {
+                std::set<std::string> scriptNames{scriptName};
+                _baseFormIdsToScriptNames.try_emplace(formId, scriptNames);
+            }
+        }
+        void AddKeywordIdForScript(RE::BGSKeyword* keyword, const std::string& scriptName) {
+            if (_keywordIdsToScriptNames.contains(keyword)) {
+                _keywordIdsToScriptNames[keyword].insert(scriptName);
+            } else {
+                std::set<std::string> scriptNames{scriptName};
+                _keywordIdsToScriptNames.try_emplace(keyword, scriptNames);
+            }
+        }
+        void AddFormListIdForScript(RE::BGSListForm* formList, const std::string& scriptName) {
+            if (_formListIdsToScriptNames.contains(formList)) {
+                _formListIdsToScriptNames[formList].insert(scriptName);
+            } else {
+                std::set<std::string> scriptNames{scriptName};
+                _formListIdsToScriptNames.try_emplace(formList, scriptNames);
+            }
+        }
 
         void BindFormIdsToScripts() {
             for (const auto& [formId, scriptName] : _formIdsToScriptNames) {
@@ -74,21 +99,42 @@ namespace ScriptsWithoutESP {
             }
         }
 
-        bool IsBaseFormRegisteredWithScript(RE::FormID baseFormId) { return _baseFormIdsToScriptNames.contains(baseFormId); }
-        std::string ScriptForBaseForm(RE::FormID baseFormId) { return _baseFormIdsToScriptNames[baseFormId]; }
+        std::set<std::string>& ScriptsForBaseForm(RE::FormID baseFormId) { return _baseFormIdsToScriptNames[baseFormId]; }
+        std::unordered_map<RE::BGSKeyword*, std::set<std::string>>& GetScriptNamesForKeywords() { return _keywordIdsToScriptNames; }
+        std::unordered_map<RE::BGSListForm*, std::set<std::string>>& GetScriptNamesForFormLists() { return _formListIdsToScriptNames; }
 
+        // So many logarithmic sad faces here with keywords etc...
         static void TryBindReference(RE::TESObjectREFR* ref) {
-            // Check 3 things...
-            // 1: BaseForm
-            // 2: Keywords
-            // 3: FormList presence
+            std::set<std::string> scriptsToBind;
             auto& system = System::GetSingleton();
             auto* baseForm = ref->GetBaseObject();
-            if (system.IsBaseFormRegisteredWithScript(baseForm->formID)) {
-                auto scriptName = system.ScriptForBaseForm(baseForm->formID);
-                PapyrusScriptBindings::BindToFormId(scriptName, ref->formID, "", true);
+
+            // Check 3 things...
+            // 1: BaseForm
+            for (const auto& scriptName : system.ScriptsForBaseForm(baseForm->formID)) {
+                scriptsToBind.insert(scriptName);
             }
-            // else --> TODO
+            // 2: Keywords
+            for (const auto& [keyword, scriptNames] : system.GetScriptNamesForKeywords()) {
+                if (ref->HasKeyword(keyword)) {
+                    for (const auto& scriptName : scriptNames) {
+                        scriptsToBind.insert(scriptName);
+                    }
+                }
+            }
+            // 3: FormList presence
+            for (const auto& [formList, scriptNames] : system.GetScriptNamesForFormLists()) {
+                if (formList->HasForm(ref) || formList->HasForm(baseForm)) {
+                    for (const auto& scriptName : scriptNames) {
+                        scriptsToBind.insert(scriptName);
+                    }
+                }
+            }
+
+            // Bind the scripts!
+            for (const auto& scriptName : scriptsToBind) {
+                PapyrusScriptBindings::BindToForm(scriptName, ref, true);
+            }
         }
 
         struct OnObjectInitialization {
@@ -146,9 +192,9 @@ namespace ScriptsWithoutESP {
                     system.AddFormIdForScript(form->formID, entry.ScriptName);
                     if (! form->AsReference()) {
                         if (form->GetFormType() == RE::FormType::Keyword) {
-                            system.AddKeywordIdForScript(form->formID, entry.ScriptName);
+                            system.AddKeywordIdForScript(form->As<RE::BGSKeyword>(), entry.ScriptName);
                         } else if (form->GetFormType() == RE::FormType::FormList) {
-                            system.AddFormListIdForScript(form->formID, entry.ScriptName);
+                            system.AddFormListIdForScript(form->As<RE::BGSListForm>(), entry.ScriptName);
                         } else {
                             system.AddBaseFormIdForScript(form->formID, entry.ScriptName);
                         }
