@@ -45,10 +45,10 @@ namespace ScriptsWithoutESP {
         std::unordered_map<RE::FormID, std::string> _baseFormIdsToScriptNames;
 
         // [Keywords]
-        // TODO
+        std::unordered_map<RE::FormID, std::string> _keywordIdsToScriptNames;
 
         // [Form lists]
-        // TODO
+        std::unordered_map<RE::FormID, std::string> _formListIdsToScriptNames;
 
         System() = default;
 
@@ -63,13 +63,10 @@ namespace ScriptsWithoutESP {
         bool IsLoadedOrSetLoaded() { return _loaded.exchange(true); }
         void SetLoaded(bool value = true) { _loaded = value; }
 
-        void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) {
-            _formIdsToScriptNames.try_emplace(formId, scriptName);
-        }
-
-        void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName) {
-            _baseFormIdsToScriptNames.try_emplace(formId, scriptName);
-        }
+        void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) { _formIdsToScriptNames.try_emplace(formId, scriptName); }
+        void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName) { _baseFormIdsToScriptNames.try_emplace(formId, scriptName); }
+        void AddKeywordIdForScript(RE::FormID formId, const std::string& scriptName) { _keywordIdsToScriptNames.try_emplace(formId, scriptName); }
+        void AddFormListIdForScript(RE::FormID formId, const std::string& scriptName) { _formListIdsToScriptNames.try_emplace(formId, scriptName); }
 
         void BindFormIdsToScripts() {
             for (const auto& [formId, scriptName] : _formIdsToScriptNames) {
@@ -77,17 +74,26 @@ namespace ScriptsWithoutESP {
             }
         }
 
-        bool ShouldBindScriptToBaseForm(RE::FormID baseFormId) { return _baseFormIdsToScriptNames.contains(baseFormId); }
+        bool IsBaseFormRegisteredWithScript(RE::FormID baseFormId) { return _baseFormIdsToScriptNames.contains(baseFormId); }
         std::string ScriptForBaseForm(RE::FormID baseFormId) { return _baseFormIdsToScriptNames[baseFormId]; }
+
+        static void TryBindReference(RE::TESObjectREFR* ref) {
+            // Check 3 things...
+            // 1: BaseForm
+            // 2: Keywords
+            // 3: FormList presence
+            auto& system = System::GetSingleton();
+            auto* baseForm = ref->GetBaseObject();
+            if (system.IsBaseFormRegisteredWithScript(baseForm->formID)) {
+                auto scriptName = system.ScriptForBaseForm(baseForm->formID);
+                PapyrusScriptBindings::BindToFormId(scriptName, ref->formID, "", true);
+            }
+            // else --> TODO
+        }
 
         struct OnObjectInitialization {
             static void thunk(RE::TESObjectREFR* ref) {
-                auto& system = System::GetSingleton();
-                auto* baseForm = ref->GetBaseObject();
-                if (system.ShouldBindScriptToBaseForm(baseForm->formID)) {
-                    auto scriptName = system.ScriptForBaseForm(baseForm->formID);
-                    PapyrusScriptBindings::BindToFormId(scriptName, ref->formID, "", true);
-                }
+                TryBindReference(ref);
                 func(ref);
             }
             static inline REL::Relocation<decltype(thunk)> func;
@@ -102,20 +108,9 @@ namespace ScriptsWithoutESP {
             auto* console = RE::ConsoleLog::GetSingleton();
             auto& system = System::GetSingleton();
             const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
-            int i = 0;
             for (auto iterator = literallyEveryFormInTheGame->begin(); iterator != literallyEveryFormInTheGame->end(); iterator++) {
-                i++;
-                if (i % 1000 == 0) {
-                    console->Print(std::format("{} Looking...", i).c_str());
-                }
                 auto* ref = iterator->second->AsReference();
-                if (ref) {
-                    auto* baseForm = ref->GetBaseObject();
-                    if (system.ShouldBindScriptToBaseForm(baseForm->formID)) {
-                        auto scriptName = system.ScriptForBaseForm(baseForm->formID);
-                        PapyrusScriptBindings::BindToFormId(scriptName, ref->formID, "", true);
-                    }
-                }
+                if (ref) TryBindReference(ref);
             }
         }
 
@@ -133,7 +128,7 @@ namespace ScriptsWithoutESP {
             }));
         }
 
-        static void Start() {
+        static void ReadAutoBindingsFiles() {
             AutoBindingsFile::Read([](const BindingDefinition& entry){
                 RE::TESForm* form = nullptr;
                 if (entry.Type == BindingDefinitionType::FormID && entry.Plugin.empty()) {
@@ -150,7 +145,13 @@ namespace ScriptsWithoutESP {
                     auto& system = System::GetSingleton();
                     system.AddFormIdForScript(form->formID, entry.ScriptName);
                     if (! form->AsReference()) {
-                        system.AddBaseFormIdForScript(form->formID, entry.ScriptName);
+                        if (form->GetFormType() == RE::FormType::Keyword) {
+                            system.AddKeywordIdForScript(form->formID, entry.ScriptName);
+                        } else if (form->GetFormType() == RE::FormType::FormList) {
+                            system.AddFormListIdForScript(form->formID, entry.ScriptName);
+                        } else {
+                            system.AddBaseFormIdForScript(form->formID, entry.ScriptName);
+                        }
                     }
                 }
             });

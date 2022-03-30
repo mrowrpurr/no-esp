@@ -8,7 +8,8 @@
 - [x] Skyrim SE + VR + AE
 - [x] Release on Nexus
 - [x] On first location load (aka coc) IF NOT A NEW GAME then load ALL THE THINGS
-- [ ] Support `;` and `#` and `//` comments in the AutoBinding files (strip them out, incl on the same line `Script 0x123 # foo`
+- [x] Support `;` and `#` and `//` comments in the AutoBinding files (strip them out, incl on the same line `Script 0x123 # foo`
+- [ ] Oh shit. Whoops. Only 1 script can register itself for a Base Form!
 - [ ] Fill properties via `ScriptName:SomeProperty 0x123 [plugin.esp]`
 - [ ] Autobind based on Keyword
 - [ ] Autobind based on FormList
