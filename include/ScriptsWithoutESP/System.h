@@ -103,7 +103,6 @@ namespace ScriptsWithoutESP {
         std::unordered_map<RE::BGSKeyword*, std::set<std::string>>& GetScriptNamesForKeywords() { return _keywordIdsToScriptNames; }
         std::unordered_map<RE::BGSListForm*, std::set<std::string>>& GetScriptNamesForFormLists() { return _formListIdsToScriptNames; }
 
-        // So many logarithmic sad faces here with keywords etc...
         static void TryBindReference(RE::TESObjectREFR* ref) {
             std::set<std::string> scriptsToBind;
             auto& system = System::GetSingleton();

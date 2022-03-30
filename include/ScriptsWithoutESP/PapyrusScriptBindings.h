@@ -14,6 +14,29 @@ using namespace RE::BSScript::Internal;
 
 namespace ScriptsWithoutESP::PapyrusScriptBindings {
 
+    void BindObjectProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object) {
+        auto* typeInfo = object->GetTypeInfo();
+        auto* properties = typeInfo->GetPropertyIter();
+        for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
+            auto typeName = properties[i].info.type.GetTypeInfo()->GetName();
+            auto propertyName = properties[i].name;
+            auto* propertyVariable = object->GetProperty(propertyName);
+            if (propertyVariable->IsObject()) {
+                auto* form = RE::TESForm::LookupByEditorID(propertyName);
+                if (form) {
+                    auto* vm = VirtualMachine::GetSingleton();
+                    auto* handlePolicy = vm->GetObjectHandlePolicy();
+                    RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
+                    RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+                    vm->CreateObject(typeName, objectPtr);
+                    auto* bindPolicy = vm->GetObjectBindPolicy();
+                    bindPolicy->BindObject(objectPtr, handle);
+                    propertyVariable->SetObject(objectPtr);
+                }
+            }
+        }
+    }
+
     void BindToForm(const std::string& scriptName, RE::TESForm* form, bool addOnce = false) {
         try {
             auto* vm = VirtualMachine::GetSingleton();
@@ -36,6 +59,7 @@ namespace ScriptsWithoutESP::PapyrusScriptBindings {
                 RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
                 vm->CreateObject(scriptName, objectPtr);
                 auto* bindPolicy = vm->GetObjectBindPolicy();
+                BindObjectProperties(objectPtr);
                 bindPolicy->BindObject(objectPtr, handle);
                 RE::ConsoleLog::GetSingleton()->Print(std::format("[Bindings] Bound script '{}' to reference!", scriptName).c_str());
             } else {
