@@ -8,7 +8,9 @@
 #pragma warning(pop)
 
 #include "BindingDefinition.h"
+#include "Common.h"
 
+using namespace ScriptsWithoutESP;
 using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
 
@@ -38,6 +40,8 @@ namespace ScriptsWithoutESP::PapyrusScriptBindings {
     }
 
     void BindToForm(std::string scriptName, RE::TESForm* form, bool addOnce = false) {
+        if (! form) return;
+
         bool autoFillProperties = true;
         if (scriptName.starts_with('!')) {
             autoFillProperties = false;

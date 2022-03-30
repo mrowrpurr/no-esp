@@ -13,7 +13,8 @@
 #include "Log.h"
 #include "AutoBindingsFile.h"
 #include "OnActorLocationChangeEventSink.h"
-#include "PapyrusScriptBindings.h"
+//#include "PapyrusScriptBindings.h"
+#include "Common.h"
 
 using namespace ScriptsWithoutESP;
 using namespace std::chrono_literals;
@@ -38,6 +39,8 @@ namespace ScriptsWithoutESP {
     class System {
 
         std::atomic<bool> _loaded = false;
+
+        std::unordered_map<std::string, bool> _linkedScriptsWorkOK;
 
         // [Generic Forms]
         // This is taken directly from the AutoBindings and maps to whatever is defined in the file.
@@ -66,6 +69,20 @@ namespace ScriptsWithoutESP {
 
         bool IsLoadedOrSetLoaded() { return _loaded.exchange(true); }
         void SetLoaded(bool value = true) { _loaded = value; }
+
+        void SetScriptLinkWorkedOK(const std::string& scriptName, bool value) { _linkedScriptsWorkOK.try_emplace(scriptName, value); }
+        bool HasScriptBeenLinked(const std::string& scriptName) { return _linkedScriptsWorkOK.contains(scriptName); }
+        bool ScriptLinkWasSuccessful(const std::string& scriptName) { return _linkedScriptsWorkOK[scriptName]; }
+        bool TryLinkScript(const std::string& scriptName) {
+            if (HasScriptBeenLinked(scriptName)) return ScriptLinkWasSuccessful(scriptName);
+            auto* vm = VirtualMachine::GetSingleton();
+             try {
+                 vm->linker.Process(scriptName);
+                 SetScriptLinkWorkedOK(scriptName, true);
+             } catch (...) {
+                 SetScriptLinkWorkedOK(scriptName, false);
+             }
+        }
 
         void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) {
             if (_formIdsToScriptNames.contains(formId)) {
@@ -104,6 +121,7 @@ namespace ScriptsWithoutESP {
         void BindFormIdsToScripts() {
             for (const auto& [formId, scriptNames] : _formIdsToScriptNames) {
                 for (const auto& scriptName : scriptNames) {
+                    TryLinkScript(scriptName);
                     PapyrusScriptBindings::BindToFormId(scriptName, formId);
                 }
             }
@@ -142,6 +160,7 @@ namespace ScriptsWithoutESP {
 
             // Bind the scripts!
             for (const auto& scriptName : scriptsToBind) {
+                system.TryLinkScript(scriptName);
                 PapyrusScriptBindings::BindToForm(scriptName, ref, true);
             }
         }
@@ -160,8 +179,6 @@ namespace ScriptsWithoutESP {
         }
 
         static void CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame() {
-            auto* console = RE::ConsoleLog::GetSingleton();
-            auto& system = System::GetSingleton();
             const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
             for (auto iterator = literallyEveryFormInTheGame->begin(); iterator != literallyEveryFormInTheGame->end(); iterator++) {
                 auto* ref = iterator->second->AsReference();

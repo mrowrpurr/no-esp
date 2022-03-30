@@ -14,6 +14,9 @@
 - [x] Autobind based on Keyword
 - [x] Autobind based on FormList
 - [x] Document the Papyrus functions
+- [x] Record a new demo!
+- [x] Fix: when the script doesn't exist, it blows up
+- [x] Double check: BindScript.ToForm and .ToEditorID don't blow up if None/not found or non-existent script!
 - [ ] Release Update on Nexus
 
 ## Optional:
@@ -22,7 +25,7 @@
   - [ ] Can toggle coc support ON (default: off)
 - [ ] Papyrus function to get a Form by an Editor ID
 - [ ] Papyrus function which will process every form in the game for script attachment
-- [ ] Papyrus functiuon which will process every object near the player or an object or a point in space
+- [ ] Papyrus function which will process every object near the player or an object or a point in space
 
 ## Later:
 - [ ] Skyrim LE
