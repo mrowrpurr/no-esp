@@ -11,7 +11,7 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
     SKSE::Init(skse);
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
-            ScriptsWithoutESP::System::Start();
+            ScriptsWithoutESP::System::ReadAutoBindingsFiles();
             System::ListenForReferences();
             System::ListenForFirstLocationLoad();
             SKSE::GetPapyrusInterface()->Register(ScriptsWithoutESP::PapyrusInterface::BIND);
