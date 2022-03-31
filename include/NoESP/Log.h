@@ -5,7 +5,7 @@
 #include <RE/C/ConsoleLog.h>
 
 // TODO: .ini file
-namespace ScriptsWithoutESP {
+namespace NoESP {
 
     template <class... Types>
     void Log(const std::string_view text, const Types&... args) {

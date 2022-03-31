@@ -10,11 +10,11 @@
 #include "BindingDefinition.h"
 #include "Common.h"
 
-using namespace ScriptsWithoutESP;
+using namespace NoESP;
 using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
 
-namespace ScriptsWithoutESP::PapyrusScriptBindings {
+namespace NoESP::PapyrusScriptBindings {
 
     void BindObjectProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object) {
         auto* typeInfo = object->GetTypeInfo();

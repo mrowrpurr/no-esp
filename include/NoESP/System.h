@@ -16,7 +16,7 @@
 //#include "PapyrusScriptBindings.h"
 #include "Common.h"
 
-using namespace ScriptsWithoutESP;
+using namespace NoESP;
 using namespace std::chrono_literals;
 
 using namespace SKSE::stl;
@@ -26,7 +26,7 @@ using namespace RE::BSScript::Internal;
 
 // TODO: split into some lovely organized files <3
 
-namespace ScriptsWithoutESP {
+namespace NoESP {
 
     // From Base Object Swapper - play around, understand it, rewrite it in my style.
     // https://github.com/powerof3/BaseObjectSwapper/blob/f636b8cc7079ddebd63eb761e99af95b29884ccc/src/PCH.h#L17-L27

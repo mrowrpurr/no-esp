@@ -5,7 +5,7 @@
 
 #include <RE/T/TESActorLocationChangeEvent.h>
 
-namespace ScriptsWithoutESP {
+namespace NoESP {
 
     class OnActorLocationChangeEventSink : public RE::BSTEventSink<RE::TESActorLocationChangeEvent> {
         std::function<void(const RE::TESActorLocationChangeEvent* event)> _eventCallback;

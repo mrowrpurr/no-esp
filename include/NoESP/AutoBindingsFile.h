@@ -9,7 +9,7 @@
 
 #include "BindingDefinition.h"
 
-namespace ScriptsWithoutESP::AutoBindingsFile {
+namespace NoESP::AutoBindingsFile {
 
     namespace {
         // https://stackoverflow.com/a/40903508

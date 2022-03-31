@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ScriptsWithoutESP {
+namespace NoESP {
 
     enum BindingDefinitionType { EditorID, FormID, Invalid };
 
