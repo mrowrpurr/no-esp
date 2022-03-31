@@ -1,30 +1,12 @@
-cmake_minimum_required(VERSION 3.21)
-
-project(no-esp VERSION 0.0.1 LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Project files
-file(GLOB_RECURSE no-esp_Files src/*.cpp include/*.h)
-
-# Define your SKSE plugin
-add_library(no-esp SHARED ${no-esp_Files})
-
-# Setup includes
-target_include_directories(no-esp PRIVATE include)
-
-#################################
-
 # Add options for specifying the version
 # Only one version may be provided at a time
 option(SKYRIM_AE "Compile plugin for Skyrim AE" OFF)
 option(SKYRIM_SE "Compile plugin for Skyrim SE" OFF)
-option(SKYRIM_VR "Compile plugin for Skyrim VR" ON)
+option(SKYRIM_VR "Compile plugin for Skyrim VR" OFF)
 
 # Exit if no Skyrim version was specified
 if(NOT ${SKYRIM_AE} AND NOT ${SKYRIM_SE} AND NOT ${SKYRIM_VR})
-	message(FATAL_ERROR "Run cmake using one of the build/ .bat files for building Skyrim")
+	message(FATAL_ERROR "Please specify a version of Skyrim by choosing a CMakeLists.txt preset")
 	return()
 endif()
 
@@ -45,25 +27,16 @@ endif()
 
 message(INFO "Skyrim Version: ${SKYRIM_VERSION}")
 
-###############
-
-# Compile with C++20 features
-target_compile_features("${PROJECT_NAME}" PRIVATE cxx_std_23)
-
-# Include spdlog
-find_package(spdlog CONFIG REQUIRED)
-target_link_libraries("${PROJECT_NAME}" PUBLIC spdlog::spdlog)
-
 # CommonLib
 if(${SKYRIM_AE})
 	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/AE" CommonLibSSE EXCLUDE_FROM_ALL)
-    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
+	target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
 elseif(${SKYRIM_SE})
 	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/SE" CommonLibSSE EXCLUDE_FROM_ALL)
-    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
+	target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibSSE::CommonLibSSE)
 elseif(${SKYRIM_VR})
 	add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/CommonLib/VR" CommonLibVR EXCLUDE_FROM_ALL)
-    target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibVR::CommonLibVR)
+	target_link_libraries("${PROJECT_NAME}" PUBLIC CommonLibVR::CommonLibVR)
 endif()
 
 # Get output directory based on configured version of Skyrim
@@ -97,10 +70,10 @@ set(DLL_FOLDER "${MOD_FOLDER}/SKSE/Plugins")
 
 # Create output directory if it does not exist
 add_custom_command(
-	TARGET "${PROJECT_NAME}"
-	POST_BUILD
-	COMMAND "${CMAKE_COMMAND}" -E make_directory "${DLL_FOLDER}"
-	VERBATIM
+		TARGET "${PROJECT_NAME}"
+		POST_BUILD
+		COMMAND "${CMAKE_COMMAND}" -E make_directory "${DLL_FOLDER}"
+		VERBATIM
 )
 
 # Print the paths that files will be output to when the project is built
@@ -111,29 +84,20 @@ endif()
 
 # Copy the output .dll and debug .pdb to the configured output directory
 add_custom_command(
-	TARGET "${PROJECT_NAME}"
-	POST_BUILD
-	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
-	COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
-	COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Scripts" "${MOD_FOLDER}/Scripts"
-	COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Source" "${MOD_FOLDER}/Source"
-	VERBATIM
-)
-
-# Copy Scripts/ and/or Source/ if they are present (at prepare time)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Scripts")
-	add_custom_command(
 		TARGET "${PROJECT_NAME}"
 		POST_BUILD
+		COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
 		COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Scripts" "${MOD_FOLDER}/Scripts"
 		VERBATIM
-	)
-endif()
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Source")
+)
+
+# Copy Scripts/ to Scripts/ and Scripts/Source to Source/Scripts
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Scripts")
 	add_custom_command(
-		TARGET "${PROJECT_NAME}"
-		POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Source" "${MOD_FOLDER}/Source"
-		VERBATIM
+			TARGET "${PROJECT_NAME}"
+			POST_BUILD
+			COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Scripts" "${MOD_FOLDER}/Scripts"
+			COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Scripts/Source" "${MOD_FOLDER}/Source/Scripts"
+			VERBATIM
 	)
 endif()
