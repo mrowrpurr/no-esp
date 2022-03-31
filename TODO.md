@@ -1,4 +1,4 @@
-# TODO
+# 1.0.0
 
 - [x] Bind to references by 0x0 reference form ID (once per script)
 - [x] Test that scripts are still attached after a save game
@@ -7,6 +7,9 @@
 - [x] Remove '*'
 - [x] Skyrim SE + VR + AE
 - [x] Release on Nexus
+
+# 1.1.0
+
 - [x] On first location load (aka coc) IF NOT A NEW GAME then load ALL THE THINGS
 - [x] Support `;` and `#` and `//` comments in the AutoBinding files (strip them out, incl on the same line `Script 0x123 # foo`
 - [x] Oh shit. Whoops. Only 1 script can register itself for a Base Form!
@@ -17,13 +20,29 @@
 - [x] Record a new demo!
 - [x] Fix: when the script doesn't exist, it blows up
 - [x] Double check: BindScript.ToForm and .ToEditorID don't blow up if None/not found or non-existent script!
-- [ ] Release Update on Nexus
+- [x] Papyrus function to get a Form by an Editor ID
+- [x] Release Update on Nexus
 
-## Optional:
+# 1.1.1
+
+Project Stuff:
+- [ ] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
+- [ ] Compiled OK in VSCode for all 3 Skyrim Versions
+- [ ] Configurable folder output for .dll and optionally scripts
+
+Feature Stuff:
 - [ ] Add .ini file support
   - [ ] Can toggle logs on and off
-  - [ ] Can toggle coc support ON (default: off)
-- [ ] Papyrus function to get a Form by an Editor ID
+  - [ ] Can set logs to be either Console or File or both
+- [ ] Update log for script bound to include the hex form ID
+- [ ] Add a .log file specifically for no-esp (rewrite with each game rerun) 
+- [ ] Can provide a *partial* Editor ID (`*foo`, `foo*`, `*foo*`, `*foo*bar*`, `/^foo.+bar$/`)
+- [ ] Can provide the name of a form type, e.g. `BOOK`
+
+---
+
+## Optional:
+
 - [ ] Papyrus function which will process every form in the game for script attachment
 - [ ] Papyrus function which will process every object near the player or an object or a point in space
 
