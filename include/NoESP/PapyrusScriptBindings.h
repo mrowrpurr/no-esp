@@ -8,7 +8,6 @@
 #pragma warning(pop)
 
 #include "BindingDefinition.h"
-#include "Common.h"
 
 using namespace NoESP;
 using namespace RE::BSScript;
