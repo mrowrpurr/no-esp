@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(COPY_BUILD "Copy the build output to the Skyrim directory." TRUE)
 option(BUILD_SKYRIMVR "Build for Skyrim VR" OFF)
-option(BUILD_SKYRIMAE "Build for Skyrim AE" ON)
+option(BUILD_SKYRIMAE "Build for Skyrim AE" OFF)
 
 # ---- Cache build vars ----
 
@@ -271,7 +271,7 @@ endif ()
 
 # ---- Post build ----
 
-set(Skyrim64Path "C:/Users/mrowr/Dropbox/Skyrim/Mod Authoring/Mods/no-esp - AE/")
+set(Skyrim64Path "C:/Users/mrowr/Dropbox/Skyrim/Mod Authoring/Mods/No ESP - AE/")
 
 if (COPY_BUILD)
 	if (DEFINED Skyrim64Path)
@@ -287,4 +287,3 @@ if (COPY_BUILD)
 			"Variable Skyrim64Path is not defined. Skipping post-build copy command."
 		)
 	endif ()
-endif()
