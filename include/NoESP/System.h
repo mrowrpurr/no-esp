@@ -13,10 +13,8 @@
 #include "Log.h"
 #include "AutoBindingsFile.h"
 #include "OnActorLocationChangeEventSink.h"
-//#include "PapyrusScriptBindings.h"
-#include "Common.h"
+#include "PapyrusScriptBindings.h"
 
-using namespace NoESP;
 using namespace std::chrono_literals;
 
 using namespace SKSE::stl;
@@ -25,6 +23,8 @@ using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
 
 // TODO: split into some lovely organized files <3
+
+// I want this file under like 50 LOC plz.
 
 namespace NoESP {
 
@@ -79,8 +79,10 @@ namespace NoESP {
              try {
                  vm->linker.Process(scriptName);
                  SetScriptLinkWorkedOK(scriptName, true);
+                 return true;
              } catch (...) {
                  SetScriptLinkWorkedOK(scriptName, false);
+                 return false;
              }
         }
 
@@ -132,6 +134,11 @@ namespace NoESP {
         std::unordered_map<RE::BGSListForm*, std::set<std::string>>& GetScriptNamesForFormLists() { return _formListIdsToScriptNames; }
 
         static void TryBindReference(RE::TESObjectREFR* ref) {
+            if (ref->IsDeleted()) {
+                Log("Not binding to deleted reference");
+                return;
+            }
+
             std::set<std::string> scriptsToBind;
             auto& system = System::GetSingleton();
             auto* baseForm = ref->GetBaseObject();
@@ -194,7 +201,7 @@ namespace NoESP {
                     if (! system.IsLoadedOrSetLoaded()) {
                         System::GetSingleton().BindFormIdsToScripts();
                         // Make this something you must turn ON in an .ini off by default:
-                        System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
+//                        System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
                     }
                 }
             }));
