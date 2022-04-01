@@ -38,7 +38,7 @@ Bug Stuff:
 Feature Stuff:
 - 
 - [x] Ignore files that don't end in .txt
-- [ ] Can provide a *partial* Editor ID (`*foo`, `foo*`, `*foo*`, `*foo*bar*`, `/^foo.+bar$/`)
+- [x] Can provide a *partial* Editor ID (`*foo`, `foo*`, `*foo*`, `*foo*bar*`, `/^foo.+bar$/`)
 - [ ] Can provide the name of a form type, e.g. `BOOK`
 - [ ] Add .ini file support
   - [ ] .ini - Can toggle logs on and off

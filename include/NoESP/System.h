@@ -141,13 +141,13 @@ namespace NoESP {
             std::string editorId = Utilities::ToLowerCase(editorIdText);
             switch (matcher.Type) {
                 case EditorIdMatcherType::Exact:
-                    return editorId == Utilities::ToLowerCase(matcher.Text);
+                    return editorId == matcher.Text;
                 case EditorIdMatcherType::PrefixMatch:
-                    return editorId.starts_with(Utilities::ToLowerCase(matcher.Text));
+                    return editorId.starts_with(matcher.Text);
                 case EditorIdMatcherType::SuffixMatch:
-                    return editorId.ends_with(Utilities::ToLowerCase(matcher.Text));
+                    return editorId.ends_with(matcher.Text);
                 case EditorIdMatcherType::PrefixAndSuffixMatch:
-                    return editorId.find(Utilities::ToLowerCase(matcher.Text)) != std::string::npos;
+                    return editorId.find(matcher.Text) != std::string::npos;
                 case EditorIdMatcherType::RegularExpression:
                     return std::regex_match(editorId, matcher.RegularExpression);
                 default:
@@ -261,7 +261,6 @@ namespace NoESP {
                         form = RE::TESForm::LookupByEditorID(entry.EditorIdMatcher.Text);
                         if (! form) Log("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorIdMatcher.Text);
                     } else {
-                        Log("Add editor ID matcher '{}' for '{}'", entry.EditorIdMatcher.Text, entry.ScriptName);
                         std::pair<EditorIdMatcher, std::string> pair{entry.EditorIdMatcher, entry.ScriptName};
                         editorIdMatcherPairs.emplace_back(pair);
                     }

@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "BindingDefinition.h"
+#include "Utilities.h"
 
 namespace NoESP::AutoBindingsFile {
 
@@ -31,21 +32,22 @@ namespace NoESP::AutoBindingsFile {
 
         EditorIdMatcher ParseEditorIdMatchText(const std::string& editorIdText) {
             EditorIdMatcher matcher;
-            if (editorIdText.starts_with('*') && editorIdText.ends_with('*') && editorIdText.length() > 2) {
+            auto editorId = Utilities::ToLowerCase(editorIdText);
+            if (editorId.starts_with('*') && editorId.ends_with('*') && editorId.length() > 2) {
                 matcher.Type = EditorIdMatcherType::PrefixAndSuffixMatch;
-                matcher.Text = editorIdText.substr(1, editorIdText.length() - 2);
-            } else if (editorIdText.starts_with('*')) {
+                matcher.Text = editorId.substr(1, editorId.length() - 2);
+            } else if (editorId.starts_with('*')) {
                 matcher.Type = EditorIdMatcherType::PrefixMatch;
-                matcher.Text = editorIdText.substr(1);
-            } else if (editorIdText.ends_with('*')) {
+                matcher.Text = editorId.substr(1);
+            } else if (editorId.ends_with('*')) {
                 matcher.Type = EditorIdMatcherType::SuffixMatch;
-                matcher.Text = editorIdText.substr(0, editorIdText.length() - 2);
-            } else if (editorIdText.starts_with('/') && editorIdText.ends_with('/') && editorIdText.length() > 2) {
+                matcher.Text = editorId.substr(0, editorId.length() - 2);
+            } else if (editorId.starts_with('/') && editorId.ends_with('/') && editorId.length() > 2) {
                 matcher.Type = EditorIdMatcherType::RegularExpression;
-                matcher.RegularExpression = editorIdText.substr(1, editorIdText.length() - 2);
+                matcher.RegularExpression = editorId.substr(1, editorId.length() - 2);
             } else {
                 matcher.Type = EditorIdMatcherType::Exact;
-                matcher.Text = editorIdText;
+                matcher.Text = editorId;
             }
             return matcher;
         }
