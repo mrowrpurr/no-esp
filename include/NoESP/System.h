@@ -60,9 +60,6 @@ namespace NoESP {
         // [Form lists]
         std::unordered_map<RE::BGSListForm*, std::set<std::string>> _formListIdsToScriptNames;
 
-        // [Editor ID matchers]
-        std::vector<std::pair<EditorIdMatcher, std::string>> _editorIdMatcherPairs;
-
         System() = default;
 
     public:
@@ -124,10 +121,6 @@ namespace NoESP {
                 _formListIdsToScriptNames.try_emplace(formList, scriptNames);
             }
         }
-        void AddEditorIdMatcherForScript(const EditorIdMatcher& matcher, const std::string& scriptName) {
-            std::pair<EditorIdMatcher, std::string> pair{matcher, scriptName};
-            _editorIdMatcherPairs.emplace_back(pair);
-        }
 
         void BindFormIdsToScripts() {
             for (const auto& [formId, scriptNames] : _formIdsToScriptNames) {
@@ -141,11 +134,9 @@ namespace NoESP {
         std::set<std::string>& ScriptsForBaseForm(RE::FormID baseFormId) { return _baseFormIdsToScriptNames[baseFormId]; }
         std::unordered_map<RE::BGSKeyword*, std::set<std::string>>& GetScriptNamesForKeywords() { return _keywordIdsToScriptNames; }
         std::unordered_map<RE::BGSListForm*, std::set<std::string>>& GetScriptNamesForFormLists() { return _formListIdsToScriptNames; }
-        std::vector<std::pair<EditorIdMatcher, std::string>> GetEditorIdMatcherPairs() { return _editorIdMatcherPairs; }
 
         // You gurl, move this to a better place!
         static bool DoesEditorIdMatch(const EditorIdMatcher& matcher, const std::string& editorIdText) {
-            Log("Does editor ID '{}' match '{}'", editorIdText, matcher.Text);
             if (editorIdText.empty()) return false;
             std::string editorId = Utilities::ToLowerCase(editorIdText);
             switch (matcher.Type) {
@@ -238,9 +229,26 @@ namespace NoESP {
             }));
         }
 
+        static void SetupFormBindings(RE::TESForm* form, const std::string& scriptName) {
+            auto& system = System::GetSingleton();
+            if (form) {
+                system.AddFormIdForScript(form->formID, scriptName);
+                if (! form->AsReference()) {
+                    if (form->GetFormType() == RE::FormType::Keyword) {
+                        system.AddKeywordIdForScript(form->As<RE::BGSKeyword>(), scriptName);
+                    } else if (form->GetFormType() == RE::FormType::FormList) {
+                        system.AddFormListIdForScript(form->As<RE::BGSListForm>(), scriptName);
+                    } else {
+                        system.AddBaseFormIdForScript(form->formID, scriptName);
+                    }
+                }
+            }
+        }
+
         static void ReadAutoBindingsFiles() {
             auto& system = System::GetSingleton();
-            AutoBindingsFile::Read([&system](const BindingDefinition& entry){
+            std::vector<std::pair<EditorIdMatcher, std::string>> editorIdMatcherPairs;
+            AutoBindingsFile::Read([&system, &editorIdMatcherPairs](const BindingDefinition& entry){
                 RE::TESForm* form = nullptr;
                 if (entry.Type == BindingDefinitionType::FormID && entry.Plugin.empty()) {
                     form = RE::TESForm::LookupByID(entry.FormID);
@@ -254,22 +262,23 @@ namespace NoESP {
                         if (! form) Log("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorIdMatcher.Text);
                     } else {
                         Log("Add editor ID matcher '{}' for '{}'", entry.EditorIdMatcher.Text, entry.ScriptName);
-                        system.AddEditorIdMatcherForScript(entry.EditorIdMatcher, entry.ScriptName);
+                        std::pair<EditorIdMatcher, std::string> pair{entry.EditorIdMatcher, entry.ScriptName};
+                        editorIdMatcherPairs.emplace_back(pair);
                     }
                 }
-                if (form) {
-                    system.AddFormIdForScript(form->formID, entry.ScriptName);
-                    if (! form->AsReference()) {
-                        if (form->GetFormType() == RE::FormType::Keyword) {
-                            system.AddKeywordIdForScript(form->As<RE::BGSKeyword>(), entry.ScriptName);
-                        } else if (form->GetFormType() == RE::FormType::FormList) {
-                            system.AddFormListIdForScript(form->As<RE::BGSListForm>(), entry.ScriptName);
-                        } else {
-                            system.AddBaseFormIdForScript(form->formID, entry.ScriptName);
+                if (form) SetupFormBindings(form, entry.ScriptName);
+            });
+            if (! editorIdMatcherPairs.empty()) {
+                const auto& [map, lock] = RE::TESForm::GetAllFormsByEditorID();
+                // O(log(n)) - Hooray!
+                for (auto iterator = map->begin(); iterator != map->end(); iterator++) {
+                    for (const auto& [matcher, scriptName] : editorIdMatcherPairs) {
+                        if (DoesEditorIdMatch(matcher, iterator->first.c_str())) {
+                            SetupFormBindings(iterator->second, scriptName);
                         }
                     }
                 }
-            });
+            }
         }
     };
 }
