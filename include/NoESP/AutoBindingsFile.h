@@ -29,7 +29,28 @@ namespace NoESP::AutoBindingsFile {
             return result;
         }
 
-        BindingDefinition ParseLine(std::string line) {
+        EditorIdMatcher ParseEditorIdMatchText(const std::string& editorIdText) {
+            EditorIdMatcher matcher;
+            if (editorIdText.starts_with('*') && editorIdText.ends_with('*') && editorIdText.length() > 2) {
+                matcher.Type = EditorIdMatcherType::PrefixAndSuffixMatch;
+                matcher.Text = editorIdText.substr(1, editorIdText.length() - 2);
+            } else if (editorIdText.starts_with('*')) {
+                matcher.Type = EditorIdMatcherType::PrefixMatch;
+                matcher.Text = editorIdText.substr(1);
+            } else if (editorIdText.ends_with('*')) {
+                matcher.Type = EditorIdMatcherType::SuffixMatch;
+                matcher.Text = editorIdText.substr(0, editorIdText.length() - 2);
+            } else if (editorIdText.starts_with('/') && editorIdText.ends_with('/') && editorIdText.length() > 2) {
+                matcher.Type = EditorIdMatcherType::RegularExpression;
+                matcher.RegularExpression = editorIdText.substr(1, editorIdText.length() - 2);
+            } else {
+                matcher.Type = EditorIdMatcherType::Exact;
+                matcher.Text = editorIdText;
+            }
+            return matcher;
+        }
+
+        BindingDefinition ParseLine(const std::string& line) {
             BindingDefinition entry;
             static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)");
             static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)");
@@ -55,7 +76,7 @@ namespace NoESP::AutoBindingsFile {
                 } else if (std::regex_search(line, matches, scriptNameWithEditorID)) {
                     entry.Type = BindingDefinitionType::EditorID;
                     entry.ScriptName = matches[1].str();
-                    entry.EditorID = matches[2].str();
+                    entry.EditorIdMatcher = ParseEditorIdMatchText(matches[2].str());
                 } else if (std::regex_search(line, matches, scriptNameOnly)) {
                     entry.Type = BindingDefinitionType::FormID;
                     entry.ScriptName = matches[1].str();
@@ -75,6 +96,7 @@ namespace NoESP::AutoBindingsFile {
         for (auto& file : std::filesystem::directory_iterator(bindingFilesDirectory)) {
             if (file.is_regular_file()) {
                 try {
+                    if (! file.path().string().ends_with(".txt")) continue;
                     auto text = ReadTextFile(file.path());
                     std::istringstream stringStream(text);
                     for (std::string line; std::getline(stringStream, line); ) {

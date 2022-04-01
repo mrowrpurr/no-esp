@@ -4,6 +4,8 @@
 
 #include <atomic>
 #include <chrono>
+#include <regex>
+#include <vector>
 
 #include <RE/C/ConsoleLog.h>
 #include <RE/T/TESDataHandler.h>
@@ -14,6 +16,7 @@
 #include "AutoBindingsFile.h"
 #include "OnActorLocationChangeEventSink.h"
 #include "PapyrusScriptBindings.h"
+#include "Utilities.h"
 
 using namespace std::chrono_literals;
 
@@ -57,6 +60,9 @@ namespace NoESP {
         // [Form lists]
         std::unordered_map<RE::BGSListForm*, std::set<std::string>> _formListIdsToScriptNames;
 
+        // [Editor ID matchers]
+        std::vector<std::pair<EditorIdMatcher, std::string>> _editorIdMatcherPairs;
+
         System() = default;
 
     public:
@@ -94,7 +100,6 @@ namespace NoESP {
                 _formIdsToScriptNames.try_emplace(formId, scriptNames);
             }
         }
-
         void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName) {
             if (_baseFormIdsToScriptNames.contains(formId)) {
                 _baseFormIdsToScriptNames[formId].insert(scriptName);
@@ -119,6 +124,10 @@ namespace NoESP {
                 _formListIdsToScriptNames.try_emplace(formList, scriptNames);
             }
         }
+        void AddEditorIdMatcherForScript(const EditorIdMatcher& matcher, const std::string& scriptName) {
+            std::pair<EditorIdMatcher, std::string> pair{matcher, scriptName};
+            _editorIdMatcherPairs.emplace_back(pair);
+        }
 
         void BindFormIdsToScripts() {
             for (const auto& [formId, scriptNames] : _formIdsToScriptNames) {
@@ -132,6 +141,28 @@ namespace NoESP {
         std::set<std::string>& ScriptsForBaseForm(RE::FormID baseFormId) { return _baseFormIdsToScriptNames[baseFormId]; }
         std::unordered_map<RE::BGSKeyword*, std::set<std::string>>& GetScriptNamesForKeywords() { return _keywordIdsToScriptNames; }
         std::unordered_map<RE::BGSListForm*, std::set<std::string>>& GetScriptNamesForFormLists() { return _formListIdsToScriptNames; }
+        std::vector<std::pair<EditorIdMatcher, std::string>> GetEditorIdMatcherPairs() { return _editorIdMatcherPairs; }
+
+        // You gurl, move this to a better place!
+        static bool DoesEditorIdMatch(const EditorIdMatcher& matcher, const std::string& editorIdText) {
+            Log("Does editor ID '{}' match '{}'", editorIdText, matcher.Text);
+            if (editorIdText.empty()) return false;
+            std::string editorId = Utilities::ToLowerCase(editorIdText);
+            switch (matcher.Type) {
+                case EditorIdMatcherType::Exact:
+                    return editorId == Utilities::ToLowerCase(matcher.Text);
+                case EditorIdMatcherType::PrefixMatch:
+                    return editorId.starts_with(Utilities::ToLowerCase(matcher.Text));
+                case EditorIdMatcherType::SuffixMatch:
+                    return editorId.ends_with(Utilities::ToLowerCase(matcher.Text));
+                case EditorIdMatcherType::PrefixAndSuffixMatch:
+                    return editorId.find(Utilities::ToLowerCase(matcher.Text)) != std::string::npos;
+                case EditorIdMatcherType::RegularExpression:
+                    return std::regex_match(editorId, matcher.RegularExpression);
+                default:
+                    return false;
+            }
+        }
 
         static void TryBindReference(RE::TESObjectREFR* ref) {
             if (ref->IsDeleted()) {
@@ -208,7 +239,8 @@ namespace NoESP {
         }
 
         static void ReadAutoBindingsFiles() {
-            AutoBindingsFile::Read([](const BindingDefinition& entry){
+            auto& system = System::GetSingleton();
+            AutoBindingsFile::Read([&system](const BindingDefinition& entry){
                 RE::TESForm* form = nullptr;
                 if (entry.Type == BindingDefinitionType::FormID && entry.Plugin.empty()) {
                     form = RE::TESForm::LookupByID(entry.FormID);
@@ -217,11 +249,15 @@ namespace NoESP {
                     form = RE::TESDataHandler::GetSingleton()->LookupForm(entry.FormID, entry.Plugin);
                     if (!form) Log("({}:{}) Form not found from plugin '{}': '{:x}'", entry.Filename, entry.ScriptName, entry.Plugin, entry.FormID);
                 } else if (entry.Type == BindingDefinitionType::EditorID) {
-                    form = RE::TESForm::LookupByEditorID(entry.EditorID);
-                    if (! form) Log("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorID);
+                    if (entry.EditorIdMatcher.Type == EditorIdMatcherType::Exact) {
+                        form = RE::TESForm::LookupByEditorID(entry.EditorIdMatcher.Text);
+                        if (! form) Log("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorIdMatcher.Text);
+                    } else {
+                        Log("Add editor ID matcher '{}' for '{}'", entry.EditorIdMatcher.Text, entry.ScriptName);
+                        system.AddEditorIdMatcherForScript(entry.EditorIdMatcher, entry.ScriptName);
+                    }
                 }
                 if (form) {
-                    auto& system = System::GetSingleton();
                     system.AddFormIdForScript(form->formID, entry.ScriptName);
                     if (! form->AsReference()) {
                         if (form->GetFormType() == RE::FormType::Keyword) {

@@ -116,16 +116,16 @@ namespace NoESP::PapyrusScriptBindings {
 
     void Bind(const BindingDefinition& def) {
         try {
-            if (def.Type == BindingDefinitionType::EditorID) {
-                BindToEditorId(def.ScriptName, def.EditorID, def.AddOnce);
+            if (def.Type == BindingDefinitionType::EditorID && def.EditorIdMatcher.Type == EditorIdMatcherType::Exact) {
+                BindToEditorId(def.ScriptName, def.EditorIdMatcher.Text, def.AddOnce);
             } else if (def.Type == BindingDefinitionType::FormID) {
                 BindToFormId(def.ScriptName, def.FormID, def.Plugin, def.AddOnce);
             }
         } catch (...) {
             if (def.Filename.empty()) {
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[Bindings] Bind() error {} {}", def.EditorID, def.FormID).c_str());
+                Log("[Bindings] Bind() error {} {} to {}", def.EditorIdMatcher.Text, def.FormID, def.ScriptName);
             } else {
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Bind() error {}", def.Filename).c_str());
+                Log("[AutoBindings] Bind() error {}", def.Filename);
             }
         }
     }
