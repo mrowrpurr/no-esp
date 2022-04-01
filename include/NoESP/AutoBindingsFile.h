@@ -67,7 +67,7 @@ namespace NoESP::AutoBindingsFile {
                     try {
                         entry.FormID = std::stoi("0x" + formIdHex, nullptr, 16);
                     } catch (...) {
-                        RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Invalid FormID '0x{}'", formIdHex).c_str());
+                        Log("Invalid FormID '0x{}'", formIdHex);
                     }
                     entry.Plugin = matches[3].str();
                 } else if (std::regex_search(line, matches, scriptNameWithSkyrimFormID)) {
@@ -85,7 +85,7 @@ namespace NoESP::AutoBindingsFile {
                     entry.FormID = 20; // 0x14 which is the PlayerRef
                 }
             } catch (...) {
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Error parsing line: '{}'", line).c_str());
+                Log("Error parsing line: '{}'", line);
             }
             return entry;
         }
@@ -132,7 +132,7 @@ namespace NoESP::AutoBindingsFile {
                         }
                     }
                 } catch (...) {
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("[AutoBindings] Failed to read file '{}'", file.path().string()).c_str());
+                    Log("Failed to read file '{}'", file.path().string());
                 }
             }
         }

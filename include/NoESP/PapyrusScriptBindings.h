@@ -72,12 +72,19 @@ namespace NoESP::PapyrusScriptBindings {
                     BindObjectProperties(objectPtr);
                 }
                 bindPolicy->BindObject(objectPtr, handle);
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[Bindings] Bound script '{}' to reference!", scriptName).c_str());
+
+                auto* ref = form->AsReference();
+                if (ref) {
+                    auto* baseForm = ref->GetBaseObject();
+                    Log("Bound script '{}' to reference '{}' 0x{:x} (base {:x})!", scriptName, baseForm->GetName(), form->formID, baseForm->formID);
+                } else {
+                    Log("Bound script '{}' to form '{}' 0x{:x}!", scriptName, form->GetName(), form->formID);
+                }
             } else {
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[Bindings] Error getting handle for script {} to reference", scriptName).c_str());
+                Log("Error getting handle for script {} to reference", scriptName);
             }
         } catch (...) {
-            RE::ConsoleLog::GetSingleton()->Print(std::format("[Bindings] Error binding script {} to reference", scriptName).c_str());
+            Log("Error binding script {} to reference", scriptName);
         }
     }
 
@@ -86,7 +93,7 @@ namespace NoESP::PapyrusScriptBindings {
         if (form) {
             BindToForm(scriptName, form, addOnce);
         } else {
-            RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find Form via Editor ID: '{}' for script '{}'", editorId, scriptName).c_str());
+            Log("Could not find Form via Editor ID: '{}' for script '{}'", editorId, scriptName);
         }
     }
 
@@ -97,7 +104,7 @@ namespace NoESP::PapyrusScriptBindings {
             if (form) {
                 BindToForm(scriptName, form, addOnce);
             } else {
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find Form via Form ID: '{}' for script '{}'", formId, scriptName).c_str());
+                Log("Could not find Form via Form ID: '{}' for script '{}'", formId, scriptName);
             }
         } else {
             auto* dataHandler = RE::TESDataHandler::GetSingleton();
@@ -106,10 +113,10 @@ namespace NoESP::PapyrusScriptBindings {
                 if (form) {
                     BindToForm(scriptName, form, addOnce);
                 } else {
-                    RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find Form via Form ID: '{}' in plugin '{}' for script '{}'", formId, optionalPluginFile, scriptName).c_str());
+                    Log("Could not find Form via Form ID: '{}' in plugin '{}' for script '{}'", formId, optionalPluginFile, scriptName);
                 }
             } else {
-                RE::ConsoleLog::GetSingleton()->Print(std::format("[Binding] Could not find plugin '{}' for script '{}'", optionalPluginFile, scriptName).c_str());
+                Log("Could not find plugin '{}' for script '{}'", optionalPluginFile, scriptName);
             }
         }
     }
@@ -123,9 +130,9 @@ namespace NoESP::PapyrusScriptBindings {
             }
         } catch (...) {
             if (def.Filename.empty()) {
-                Log("[Bindings] Bind() error {} {} to {}", def.EditorIdMatcher.Text, def.FormID, def.ScriptName);
+                Log("Bind() error {} {} to {}", def.EditorIdMatcher.Text, def.FormID, def.ScriptName);
             } else {
-                Log("[AutoBindings] Bind() error {}", def.Filename);
+                Log("Bind() error {}", def.Filename);
             }
         }
     }
