@@ -28,18 +28,22 @@
 Project Stuff:
 - [ ] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
 - [ ] Compiled OK in VSCode for all 3 Skyrim Versions
-- [ ] Configurable folder output for .dll and optionally scripts
+- [ ] Configurable folder output for .dll and scripts
+
+Bug Stuff:
+- [o] CTD when the save has deleted references - could not reproduce, but added a check and a log
+- [ ] Double Init?
+- [o] No Activate? - pretty sure this is because the doors aren't activate-able
 
 Feature Stuff:
+- [ ] Ignore files that don't end in .txt
 - [ ] Add .ini file support
-  - [ ] Can toggle logs on and off
-  - [ ] Can set logs to be either Console or File or both
+  - [ ] .ini - Can toggle logs on and off
+  - [ ] .ini - Can set logs to be either Console or File or both
 - [ ] Update log for script bound to include the hex form ID
 - [ ] Add a .log file specifically for no-esp (rewrite with each game rerun) 
 - [ ] Can provide a *partial* Editor ID (`*foo`, `foo*`, `*foo*`, `*foo*bar*`, `/^foo.+bar$/`)
 - [ ] Can provide the name of a form type, e.g. `BOOK`
-
----
 
 ## Optional:
 
