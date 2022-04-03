@@ -6,12 +6,13 @@ using namespace std::literals;
 
 #include "NoESP/System.h"
 #include "NoESP/PapyrusInterface.h"
-#include "NoESP/PapyrusScriptBindings.h"
+#include "NoESP/Log.h"
 
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
+            NoESP::Logging::Initialize();
             NoESP::System::ReadAutoBindingsFiles();
             System::ListenForReferences();
             System::ListenForMenuOpenClose();
