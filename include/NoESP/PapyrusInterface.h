@@ -16,6 +16,10 @@ namespace NoESP::PapyrusInterface {
         PapyrusScriptBindings::BindToEditorId(scriptName, editorId, addOnce);
     }
 
+    void BindScript_RefreshAllObjectReferences(RE::StaticFunctionTag*) {
+        System::GetSingleton().CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
+    }
+
     RE::TESForm* FormFromEditorID_Get(RE::StaticFunctionTag*, std::string editorName) {
         return RE::TESForm::LookupByEditorID(editorName);
     }
@@ -23,6 +27,7 @@ namespace NoESP::PapyrusInterface {
     bool BIND(RE::BSScript::IVirtualMachine* vm) {
         vm->RegisterFunction("ToForm", "BindScript", BindScript_ToForm);
         vm->RegisterFunction("ToEditorId", "BindScript", BindScript_ToEditorId);
+        vm->RegisterFunction("RefreshAllObjectReferences", "BindScript", BindScript_RefreshAllObjectReferences);
         vm->RegisterFunction("Get", "FormFromEditorID", FormFromEditorID_Get);
         return true;
     }

@@ -32,8 +32,7 @@
 # 1.2.0
 
 Project Stuff:
-- [ ] Refactor System into files that make sense!
-- [ ] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
+- [x] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
 - [x] Compiled OK in VSCode for all 3 Skyrim Versions
 - [x] .bat files for compiling any version
 - [ ] Document configurable folder output for .dll and scripts
@@ -46,12 +45,13 @@ Features:
 - [ ] Papyrus function which will process every object near the player or an object or a point in space
 
 # Config:
-- [ ] Add .ini file support
+- [x] Add .ini file support
   - [x] .ini - Can toggle console logs on and off
-  - [ ] .ini - Can disable on load object reference search
+  - [x] .ini - Can disable on load object reference search
 
 # Logs:
 - [x] Add a .log file specifically for no-esp (rewrite with each game rerun) 
 
 ## Later:
+- [ ] Refactor System into files that make sense!
 - [ ] Skyrim LE

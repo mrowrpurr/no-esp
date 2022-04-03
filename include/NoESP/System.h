@@ -44,6 +44,11 @@ namespace NoESP {
         // Whether or not the system has loaded for the current game - specifically, looking for game references.
         std::atomic<bool> _loaded = false;
 
+        // Because I'm still learning locking...
+        // This silly bool just used for only enumerating ALL objects in the game once at a time
+        // TODO: add locking to the function below for each form when it modifies it (by attaching script)
+        std::atomic<bool> _lookingAtAllScripts = false;
+
         // Cache of scripts which have been linked (by .pex name)
         std::unordered_map<std::string, bool> _linkedScriptsWorkOK;
 
@@ -74,6 +79,9 @@ namespace NoESP {
 
         bool IsLoadedOrSetLoaded() { return _loaded.exchange(true); }
         void SetLoaded(bool value = true) { _loaded = value; }
+
+        bool IsLookingAtAllScriptsOrSet() { return _lookingAtAllScripts.exchange(true); }
+        void SetLookingAtAllScripts(bool value = true) { _lookingAtAllScripts = value; }
 
         void SetScriptLinkWorkedOK(const std::string& scriptName, bool value) { _linkedScriptsWorkOK.try_emplace(scriptName, value); }
         bool HasScriptBeenLinked(const std::string& scriptName) { return _linkedScriptsWorkOK.contains(scriptName); }
@@ -207,10 +215,18 @@ namespace NoESP {
         }
 
         static void CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame() {
-            const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
-            for (auto iterator = literallyEveryFormInTheGame->begin(); iterator != literallyEveryFormInTheGame->end(); iterator++) {
-                auto* ref = iterator->second->AsReference();
-                if (ref) TryBindReference(ref);
+            auto& system = System::GetSingleton();
+            if (system.IsLookingAtAllScriptsOrSet()) {
+                Log("Already checking every object reference in the game, skipping search.");
+                return;
+            } else {
+                Log("Checking every object reference in the game for whether a script should be attached...");
+                const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
+                for (auto iterator = literallyEveryFormInTheGame->begin(); iterator != literallyEveryFormInTheGame->end(); iterator++) {
+                    auto* ref = iterator->second->AsReference();
+                    if (ref) TryBindReference(ref);
+                }
+                system.SetLookingAtAllScripts(false);
             }
         }
 
