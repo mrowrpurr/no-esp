@@ -295,5 +295,12 @@ namespace NoESP {
                 }
             }
         }
+
+        static void Load() {
+            ReadAutoBindingsFiles();
+            ListenForReferences();
+            ListenForMenuOpenClose();
+            ListenForFirstLocationLoad();
+        }
     };
 }

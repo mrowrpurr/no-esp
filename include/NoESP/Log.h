@@ -1,21 +1,19 @@
 #pragma once
 
 #include <format>
-#include <string_view>
 #include <RE/C/ConsoleLog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
 #include "Config.h"
 
-// TODO: .ini file
 namespace NoESP {
 
-    // TODO try getting rid of this section:
     namespace Logging {
         void Initialize() {
             auto path = SKSE::log::log_directory();
-            if (!path) {
+            if (! path) {
                 SKSE::stl::report_and_fail("Failed to find standard logging directory");
+                return;
             }
 
             *path /= "no-esp.log";

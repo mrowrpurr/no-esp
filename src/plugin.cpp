@@ -13,10 +13,7 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
             Logging::Initialize();
             Config::LoadFromIni();
-            System::ReadAutoBindingsFiles();
-            System::ListenForReferences();
-            System::ListenForMenuOpenClose();
-            System::ListenForFirstLocationLoad();
+            System::Load();
             SKSE::GetPapyrusInterface()->Register(NoESP::PapyrusInterface::BIND);
         } else if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPostLoadGame) {
             auto& system = System::GetSingleton();
