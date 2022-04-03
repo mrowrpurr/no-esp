@@ -76,7 +76,7 @@ namespace NoESP::PapyrusScriptBindings {
                 auto* ref = form->AsReference();
                 if (ref) {
                     auto* baseForm = ref->GetBaseObject();
-                    Log("Bound script '{}' to reference '{}' 0x{:x} (base {:x})!", scriptName, baseForm->GetName(), form->formID, baseForm->formID);
+                    Log("Bound script '{}' to reference '{}' 0x{:x} (base '{}' 0x{:x})!", scriptName, form->GetName(), form->formID, baseForm->GetName(), baseForm->formID);
                 } else {
                     Log("Bound script '{}' to form '{}' 0x{:x}!", scriptName, form->GetName(), form->formID);
                 }
@@ -98,7 +98,6 @@ namespace NoESP::PapyrusScriptBindings {
     }
 
     void BindToFormId(const std::string& scriptName, RE::FormID formId, const std::string optionalPluginFile = "", bool addOnce = false) {
-        Log("BindToFormId {} {} {}", scriptName, formId, optionalPluginFile);
         if (optionalPluginFile.empty()) {
             auto* form = RE::TESForm::LookupByID(formId);
             if (form) {
