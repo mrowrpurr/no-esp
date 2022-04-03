@@ -32,6 +32,7 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Query(const SKSE::Query
     return true;
 }
 
+#ifdef SKYRIM_AE
 extern "C" __declspec(dllexport) constinit auto SKSEPlugin_Version = [](){
     SKSE::PluginVersionData version;
     version.PluginName("NoESP");
@@ -40,3 +41,4 @@ extern "C" __declspec(dllexport) constinit auto SKSEPlugin_Version = [](){
     version.UsesAddressLibrary(true); // Not really necessary or is it?
     return version;
 }();
+#endif
