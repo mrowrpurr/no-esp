@@ -97,3 +97,13 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Scripts")
 			VERBATIM
 	)
 endif()
+
+# Also copy over the .pdb when doing a Debug 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_custom_command(
+			TARGET "${PROJECT_NAME}"
+			POST_BUILD
+			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}"
+			VERBATIM
+	)
+endif()
