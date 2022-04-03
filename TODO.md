@@ -34,7 +34,8 @@
 Project Stuff:
 - [ ] Refactor System into files that make sense!
 - [ ] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
-- [ ] Compiled OK in VSCode for all 3 Skyrim Versions
+- [x] Compiled OK in VSCode for all 3 Skyrim Versions
+- [x] .bat files for compiling any version
 - [ ] Document configurable folder output for .dll and scripts
 
 Features:

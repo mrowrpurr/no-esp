@@ -126,8 +126,8 @@
         }
       },
       "toolchainFile": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake",
-      "binaryDir": "${sourceDir}/build/AE",
-      "installDir": "${sourceDir}/install/AE"
+      "binaryDir": "${sourceDir}/build/debug/AE",
+      "installDir": "${sourceDir}/install/debug/AE"
     },
     {
       "name": "vs2022-windows-debug-SE",
@@ -141,8 +141,8 @@
         }
       },
       "toolchainFile": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake",
-      "binaryDir": "${sourceDir}/build/SE",
-      "installDir": "${sourceDir}/install/SE"
+      "binaryDir": "${sourceDir}/build/debug/SE",
+      "installDir": "${sourceDir}/install/debug/SE"
     },
     {
       "name": "vs2022-windows-debug-VR",
@@ -156,8 +156,8 @@
         }
       },
       "toolchainFile": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake",
-      "binaryDir": "${sourceDir}/build/VR",
-      "installDir": "${sourceDir}/install/VR"
+      "binaryDir": "${sourceDir}/build/debug/VR",
+      "installDir": "${sourceDir}/install/debug/VR"
     },
     {
       "name": "vs2022-windows-release-AE",
@@ -171,8 +171,8 @@
         }
       },
       "toolchainFile": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake",
-      "binaryDir": "${sourceDir}/build/AE",
-      "installDir": "${sourceDir}/install/AE"
+      "binaryDir": "${sourceDir}/build/release/AE",
+      "installDir": "${sourceDir}/install/release/AE"
     },
     {
       "name": "vs2022-windows-release-SE",
@@ -186,8 +186,8 @@
         }
       },
       "toolchainFile": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake",
-      "binaryDir": "${sourceDir}/build/SE",
-      "installDir": "${sourceDir}/install/SE"
+      "binaryDir": "${sourceDir}/build/release/SE",
+      "installDir": "${sourceDir}/install/release/SE"
     },
     {
       "name": "vs2022-windows-release-VR",
@@ -201,8 +201,8 @@
         }
       },
       "toolchainFile": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake",
-      "binaryDir": "${sourceDir}/build/VR",
-      "installDir": "${sourceDir}/install/VR"
+      "binaryDir": "${sourceDir}/build/release/VR",
+      "installDir": "${sourceDir}/install/release/VR"
     }
   ],
   "buildPresets": [
