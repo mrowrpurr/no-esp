@@ -1,12 +1,3 @@
-[submodule "vcpkg/AE"]
-	path = vcpkg/AE
-	url = https://github.com/microsoft/vcpkg.git
-[submodule "vcpkg/SE"]
-	path = vcpkg/SE
-	url = https://github.com/microsoft/vcpkg.git
-[submodule "vcpkg/VR"]
-	path = vcpkg/VR
-	url = https://github.com/microsoft/vcpkg.git
 [submodule "CommonLib/SE"]
 	path = CommonLib/SE
 	url = https://github.com/powerof3/CommonLibSSE.git

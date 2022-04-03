@@ -119,13 +119,8 @@
       "displayName": "vs2022-windows Debug AE",
       "inherits": [ "vs2022-windows-debug-base", "vcpkg", "windows" ],
       "cacheVariables": {
-        "SKYRIM_AE": "ON",
-        "CMAKE_TOOLCHAIN_FILE": {
-          "type": "STRING",
-          "value": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake"
-        }
+        "SKYRIM_AE": "ON"
       },
-      "toolchainFile": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake",
       "binaryDir": "${sourceDir}/build/debug/AE",
       "installDir": "${sourceDir}/install/debug/AE"
     },
@@ -134,13 +129,8 @@
       "displayName": "vs2022-windows Debug SE",
       "inherits": [ "vs2022-windows-debug-base", "vcpkg", "windows" ],
       "cacheVariables": {
-        "SKYRIM_SE": "ON",
-        "CMAKE_TOOLCHAIN_FILE": {
-          "type": "STRING",
-          "value": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake"
-        }
+        "SKYRIM_SE": "ON"
       },
-      "toolchainFile": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake",
       "binaryDir": "${sourceDir}/build/debug/SE",
       "installDir": "${sourceDir}/install/debug/SE"
     },
@@ -149,13 +139,8 @@
       "displayName": "vs2022-windows Debug VR",
       "inherits": [ "vs2022-windows-debug-base", "vcpkg", "windows" ],
       "cacheVariables": {
-        "SKYRIM_VR": "ON",
-        "CMAKE_TOOLCHAIN_FILE": {
-          "type": "STRING",
-          "value": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake"
-        }
+        "SKYRIM_VR": "ON"
       },
-      "toolchainFile": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake",
       "binaryDir": "${sourceDir}/build/debug/VR",
       "installDir": "${sourceDir}/install/debug/VR"
     },
@@ -164,13 +149,8 @@
       "displayName": "vs2022-windows Release AE",
       "inherits": [ "vs2022-windows-release-base", "vcpkg", "windows" ],
       "cacheVariables": {
-        "SKYRIM_AE": "ON",
-        "CMAKE_TOOLCHAIN_FILE": {
-          "type": "STRING",
-          "value": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake"
-        }
+        "SKYRIM_AE": "ON"
       },
-      "toolchainFile": "${sourceDir}/vcpkg/AE/scripts/buildsystems/vcpkg.cmake",
       "binaryDir": "${sourceDir}/build/release/AE",
       "installDir": "${sourceDir}/install/release/AE"
     },
@@ -179,13 +159,8 @@
       "displayName": "vs2022-windows Release SE",
       "inherits": [ "vs2022-windows-release-base", "vcpkg", "windows" ],
       "cacheVariables": {
-        "SKYRIM_SE": "ON",
-        "CMAKE_TOOLCHAIN_FILE": {
-          "type": "STRING",
-          "value": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake"
-        }
+        "SKYRIM_SE": "ON"
       },
-      "toolchainFile": "${sourceDir}/vcpkg/SE/scripts/buildsystems/vcpkg.cmake",
       "binaryDir": "${sourceDir}/build/release/SE",
       "installDir": "${sourceDir}/install/release/SE"
     },
@@ -194,13 +169,8 @@
       "displayName": "vs2022-windows Release VR",
       "inherits": [ "vs2022-windows-release-base", "vcpkg", "windows" ],
       "cacheVariables": {
-        "SKYRIM_VR": "ON",
-        "CMAKE_TOOLCHAIN_FILE": {
-          "type": "STRING",
-          "value": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake"
-        }
+        "SKYRIM_VR": "ON"
       },
-      "toolchainFile": "${sourceDir}/vcpkg/VR/scripts/buildsystems/vcpkg.cmake",
       "binaryDir": "${sourceDir}/build/release/VR",
       "installDir": "${sourceDir}/install/release/VR"
     }
