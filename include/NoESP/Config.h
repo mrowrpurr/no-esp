@@ -17,10 +17,10 @@ namespace NoESP::Config {
                     LogToConsole = ini.GetBoolValue("Logging", "bLogToConsole", false);
                     SearchObjectReferencesOnStart = ini.GetBoolValue("Bindings", "bSearchReferencesOnLoad", false);
                 } else {
-                    logger::info(std::format("Failed to parse .ini {}", iniPath.string()));
+                    SKSE::log::info(std::format("Failed to parse .ini {}", iniPath.string()));
                 }
             } catch (...) {
-                 logger::info(std::format("Failed to load .ini {}", iniPath.string()));
+                 SKSE::log::info(std::format("Failed to load .ini {}", iniPath.string()));
             }
         }
     }
