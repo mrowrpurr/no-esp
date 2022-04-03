@@ -10,11 +10,13 @@
 #include <RE/C/ConsoleLog.h>
 #include <RE/T/TESDataHandler.h>
 #include <RE/T/TESObjectREFR.h>
+#include <RE/U/UI.h>
 #include <REL/Relocation.h>
 
 #include "Log.h"
 #include "AutoBindingsFile.h"
 #include "OnActorLocationChangeEventSink.h"
+#include "OnMenuOpenCloseEventSink.h"
 #include "PapyrusScriptBindings.h"
 #include "Utilities.h"
 
@@ -156,10 +158,7 @@ namespace NoESP {
         }
 
         static void TryBindReference(RE::TESObjectREFR* ref) {
-            if (ref->IsDeleted()) {
-                Log("Not binding to deleted reference");
-                return;
-            }
+            if (ref->IsDeleted()) return;
 
             std::set<std::string> scriptsToBind;
             auto& system = System::GetSingleton();
@@ -221,12 +220,25 @@ namespace NoESP {
                 if (event->actor->formID == 20) { // The player reference
                     auto& system = System::GetSingleton();
                     if (! system.IsLoadedOrSetLoaded()) {
-                        System::GetSingleton().BindFormIdsToScripts();
-                        // Make this something you must turn ON in an .ini off by default:
-//                        System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
+                        Log("[coc] Binding declared forms/references to Scripts");
+                        system.BindFormIdsToScripts();
+                        Log("[coc] Search all game references to attach scripts");
+                        System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
                     }
                 }
             }));
+        }
+
+        // Set the system back to unloaded when the Main Menu is opened
+        static void ListenForMenuOpenClose() {
+            RE::UI::GetSingleton()->AddEventSink(
+                    new OnMenuOpenCloseEventSink([](const RE::MenuOpenCloseEvent* event){
+                        if (event->opening && event->menuName == "Main Menu") {
+                            System::GetSingleton().SetLoaded(false);
+                            Log("Set Loaded = False");
+                        }
+                    })
+            );
         }
 
         static void SetupFormBindings(RE::TESForm* form, const std::string& scriptName) {

@@ -14,12 +14,17 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
             NoESP::System::ReadAutoBindingsFiles();
             System::ListenForReferences();
-            System::ListenForFirstLocationLoad(); // for COC support (refactor into something that directly detects COC from main menu)
+            System::ListenForMenuOpenClose();
+            System::ListenForFirstLocationLoad();
             SKSE::GetPapyrusInterface()->Register(NoESP::PapyrusInterface::BIND);
         } else if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPostLoadGame) {
             auto& system = System::GetSingleton();
-            system.SetLoaded();
-            system.BindFormIdsToScripts();
+            if (! system.IsLoadedOrSetLoaded()) {
+                Log("Binding declared forms/references to Scripts");
+                system.BindFormIdsToScripts();
+                Log("Search all game references to attach scripts");
+                System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
+            }
         }
     });
     return true;
