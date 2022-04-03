@@ -32,6 +32,8 @@
 # 1.2.0
 
 Project Stuff:
+- [ ] Remove manual spdlog setup if not necessary for SKSE::log
+- [ ] Refactor System into files that make sense!
 - [ ] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
 - [ ] Compiled OK in VSCode for all 3 Skyrim Versions
 - [ ] Configurable folder output for .dll and scripts
@@ -49,7 +51,7 @@ Features:
   - [ ] .ini - Can set logs to be either Console or File or both
 
 # Logs:
-- [ ] Add a .log file specifically for no-esp (rewrite with each game rerun) 
+- [x] Add a .log file specifically for no-esp (rewrite with each game rerun) 
 
 ## Later:
 - [ ] Skyrim LE

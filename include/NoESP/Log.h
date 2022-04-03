@@ -8,14 +8,13 @@
 // TODO: .ini file
 namespace NoESP {
 
-    template <class... Types>
-    void Log(const std::string text, const Types&... args) {
-        RE::ConsoleLog::GetSingleton()->Print(std::format(std::format("[NoESP] {}", text), args...).c_str());
-        logger::info(std::format(text, args...));
-    };
-
+    // TODO try getting rid of this section:
     namespace Logging {
-        void Initialize() {
+        bool LogToConsole = false;
+
+        void Initialize(bool logToConsole = false) {
+            LogToConsole = logToConsole;
+
             auto path = logger::log_directory();
             if (!path) {
                 SKSE::stl::report_and_fail("Failed to find standard logging directory"sv);
@@ -31,6 +30,14 @@ namespace NoESP {
 
             spdlog::set_default_logger(std::move(log));
             spdlog::set_pattern("%g(%#): [%^%l%$] %v"s);
+        }
+    };
+
+    template <class... Types>
+    void Log(const std::string text, const Types&... args) {
+        logger::info(std::format(text, args...));
+        if (Logging::LogToConsole) {
+            RE::ConsoleLog::GetSingleton()->Print(std::format(std::format("[NoESP] {}", text), args...).c_str());
         }
     };
 }

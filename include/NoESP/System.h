@@ -1,5 +1,3 @@
-//auto* keyword = form->As<RE::BGSKeyword>();
-
 #pragma once
 
 #include <atomic>
@@ -15,8 +13,8 @@
 
 #include "Log.h"
 #include "AutoBindingsFile.h"
-#include "OnActorLocationChangeEventSink.h"
-#include "OnMenuOpenCloseEventSink.h"
+#include "Events/OnActorLocationChangeEventSink.h"
+#include "Events/OnMenuOpenCloseEventSink.h"
 #include "PapyrusScriptBindings.h"
 #include "Utilities.h"
 
@@ -43,8 +41,10 @@ namespace NoESP {
 
     class System {
 
+        // Whether or not the system has loaded for the current game - specifically, looking for game references.
         std::atomic<bool> _loaded = false;
 
+        // Cache of scripts which have been linked (by .pex name)
         std::unordered_map<std::string, bool> _linkedScriptsWorkOK;
 
         // [Generic Forms]
@@ -235,7 +235,7 @@ namespace NoESP {
                     new OnMenuOpenCloseEventSink([](const RE::MenuOpenCloseEvent* event){
                         if (event->opening && event->menuName == "Main Menu") {
                             System::GetSingleton().SetLoaded(false);
-                            Log("Set Loaded = False");
+                            Log("Detected Main Menu. New game or Load game or COC will apply scripts for any matching ObjectReferences in the game.");
                         }
                     })
             );

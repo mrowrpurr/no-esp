@@ -8,10 +8,10 @@
     "supports": "windows & x64",
     "dependencies": [
         "boost-stl-interfaces",
-        "simpleini",
         "spdlog",
         "xbyak",
-        "rsm-binary-io"
+        "rsm-binary-io",
+        "simpleini"
     ],
     "builtin-baseline":"bba8794b82a0f44b8709f294850a2c8e96b61415",
     "overrides": [
