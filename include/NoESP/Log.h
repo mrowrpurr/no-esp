@@ -12,9 +12,7 @@ namespace NoESP {
     namespace Logging {
         bool LogToConsole = false;
 
-        void Initialize(bool logToConsole = false) {
-            LogToConsole = logToConsole;
-
+        void Initialize() {
             auto path = logger::log_directory();
             if (!path) {
                 SKSE::stl::report_and_fail("Failed to find standard logging directory"sv);
