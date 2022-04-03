@@ -25,40 +25,31 @@
 
 # 1.1.1
 
+- [x] Ignore files that don't end in .txt
+- [x] Can provide a *partial* Editor ID (`*foo`, `foo*`, `*foo*`, `*foo*bar*`, `/^foo.+bar$/`)
+- [x] Update log for script bound to include the hex form ID
+
+# 1.2.0
+
 Project Stuff:
 - [ ] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
 - [ ] Compiled OK in VSCode for all 3 Skyrim Versions
 - [ ] Configurable folder output for .dll and scripts
 
-Bug Stuff:
-- [o] CTD when the save has deleted references - could not reproduce, but added a check and a log
-- [o] Double Init?
-- [o] No Activate? - pretty sure this is because the doors aren't activate-able
-
-Feature Stuff:
-- 
-- [x] Ignore files that don't end in .txt
-- [x] Can provide a *partial* Editor ID (`*foo`, `foo*`, `*foo*`, `*foo*bar*`, `/^foo.+bar$/`)
+Features:
+- [ ] Process every reference in the game on game load
+  - [ ] Capture Main Menu visit or leave
 - [ ] Can provide the name of a form type, e.g. `BOOK`
-- [ ] Add .ini file support
-  - [ ] .ini - Can toggle logs on and off
-  - [ ] .ini - Can set logs to be either Console or File or both
-- [ ] Update log for script bound to include the hex form ID
-- [ ] Add a .log file specifically for no-esp (rewrite with each game rerun) 
-
-## Optional:
-
 - [ ] Papyrus function which will process every form in the game for script attachment
 - [ ] Papyrus function which will process every object near the player or an object or a point in space
 
+# Config:
+- [ ] Add .ini file support
+  - [ ] .ini - Can toggle logs on and off
+  - [ ] .ini - Can set logs to be either Console or File or both
+
+# Logs:
+- [ ] Add a .log file specifically for no-esp (rewrite with each game rerun) 
+
 ## Later:
 - [ ] Skyrim LE
-
-### Maximum Allowed ESPs per Game
-
-- AE: ~4000
-- SE: ~4000
-- VR: 254
-- LE: 255
-
-
