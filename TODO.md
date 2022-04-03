@@ -32,23 +32,22 @@
 # 1.2.0
 
 Project Stuff:
-- [ ] Remove manual spdlog setup if not necessary for SKSE::log
 - [ ] Refactor System into files that make sense!
-- [ ] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
+- [x] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
 - [ ] Compiled OK in VSCode for all 3 Skyrim Versions
-- [ ] Configurable folder output for .dll and scripts
+- [ ] Document configurable folder output for .dll and scripts
 
 Features:
-- [ ] Process every reference in the game on game load
-  - [ ] Capture Main Menu visit or leave
+- [x] Process every reference in the game on game load
+  - [x] Capture Main Menu visit or leave
 - [ ] Can provide the name of a form type, e.g. `BOOK`
 - [ ] Papyrus function which will process every form in the game for script attachment
 - [ ] Papyrus function which will process every object near the player or an object or a point in space
 
 # Config:
 - [ ] Add .ini file support
-  - [ ] .ini - Can toggle logs on and off
-  - [ ] .ini - Can set logs to be either Console or File or both
+  - [x] .ini - Can toggle console logs on and off
+  - [ ] .ini - Can disable on load object reference search
 
 # Logs:
 - [x] Add a .log file specifically for no-esp (rewrite with each game rerun) 
