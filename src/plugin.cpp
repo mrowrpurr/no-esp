@@ -100,38 +100,23 @@
 #include <ShlObj_core.h>
 #include <Windows.h>
 
-#include <SimpleIni.h>
 
 namespace logger = SKSE::log;
 namespace string = SKSE::stl::string;
+
 using namespace std::literals;
 
+#include "NoESP/Log.h"
+#include "NoESP/Config.h"
 #include "NoESP/System.h"
 #include "NoESP/PapyrusInterface.h"
-#include "NoESP/Log.h"
 
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
             Logging::Initialize();
-
-            // Move this!!!!!!!!!
-            auto iniPath = std::filesystem::current_path() / "Data" / "SKSE" / "Plugins" / "no-esp.ini";
-            if (std::filesystem::is_regular_file(iniPath)) {
-                try {
-                    CSimpleIni ini;
-                    auto loadError = ini.LoadFile(iniPath.string().c_str());
-                    if (loadError == SI_Error::SI_OK) {
-                        Logging::LogToConsole = ini.GetBoolValue("Logging", "bLogToConsole", false);
-                    } else {
-                        Log("Failed to parse .ini {}", iniPath.string());
-                    }
-                } catch (...) {
-                    Log("Failed to load .ini {}", iniPath.string());
-                }
-            }
-
+            Config::LoadFromIni();
             System::ReadAutoBindingsFiles();
             System::ListenForReferences();
             System::ListenForMenuOpenClose();

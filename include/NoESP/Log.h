@@ -5,13 +5,13 @@
 #include <RE/C/ConsoleLog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
+#include "Config.h"
+
 // TODO: .ini file
 namespace NoESP {
 
     // TODO try getting rid of this section:
     namespace Logging {
-        bool LogToConsole = false;
-
         void Initialize() {
             auto path = logger::log_directory();
             if (!path) {
@@ -34,7 +34,7 @@ namespace NoESP {
     template <class... Types>
     void Log(const std::string text, const Types&... args) {
         logger::info(std::format(text, args...));
-        if (Logging::LogToConsole) {
+        if (NoESP::Config::LogToConsole) {
             RE::ConsoleLog::GetSingleton()->Print(std::format(std::format("[NoESP] {}", text), args...).c_str());
         }
     };
