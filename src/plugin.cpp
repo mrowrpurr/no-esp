@@ -127,8 +127,12 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
             if (! system.IsLoadedOrSetLoaded()) {
                 Log("Binding declared forms/references to Scripts");
                 system.BindFormIdsToScripts();
-                Log("Search all game references to attach scripts");
-                System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
+                if (Config::SearchObjectReferencesOnStart) {
+                    Log("Search all game references to attach scripts");
+                    System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
+                } else {
+                    Log("Did not search all game references to attach scripts. Disabled via .ini");
+                }
             }
         }
     });

@@ -5,7 +5,7 @@
 
 namespace NoESP::Config {
     bool LogToConsole = false;
-    bool ScanObjectReferencesOnStart = true;
+    bool SearchObjectReferencesOnStart = true;
 
     void LoadFromIni() {
         auto iniPath = std::filesystem::current_path() / "Data" / "SKSE" / "Plugins" / "no-esp.ini";
@@ -15,6 +15,7 @@ namespace NoESP::Config {
                 auto loadError = ini.LoadFile(iniPath.string().c_str());
                 if (loadError == SI_Error::SI_OK) {
                     LogToConsole = ini.GetBoolValue("Logging", "bLogToConsole", false);
+                    SearchObjectReferencesOnStart = ini.GetBoolValue("Bindings", "bSearchReferencesOnLoad", false);
                 } else {
                     logger::info(std::format("Failed to parse .ini {}", iniPath.string()));
                 }

@@ -222,8 +222,12 @@ namespace NoESP {
                     if (! system.IsLoadedOrSetLoaded()) {
                         Log("[coc] Binding declared forms/references to Scripts");
                         system.BindFormIdsToScripts();
-                        Log("[coc] Search all game references to attach scripts");
-                        System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
+                        if (Config::SearchObjectReferencesOnStart) {
+                            Log("[coc] Search all game references to attach scripts");
+                            System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
+                        } else {
+                            Log("[coc] Did not search all game references to attach scripts. Disabled via .ini");
+                        }
                     }
                 }
             }));
