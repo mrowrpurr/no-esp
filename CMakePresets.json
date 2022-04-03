@@ -79,7 +79,7 @@
       "hidden": true
     },
     {
-      "name": "vs2022-windows-debug",
+      "name": "vs2022-windows-debug-base",
       "architecture": {
         "strategy": "set",
         "value": "x64"
@@ -93,11 +93,11 @@
         "vcpkg",
         "windows"
       ],
-      "displayName": "vs2022-windows DEBUG",
+      "displayName": "vs2022-windows Debug (Base)",
       "toolset": "v143"
     },
     {
-      "name": "vs2022-windows-release",
+      "name": "vs2022-windows-release-base",
       "architecture": {
         "strategy": "set",
         "value": "x64"
@@ -111,12 +111,13 @@
         "vcpkg",
         "windows"
       ],
-      "displayName": "vs2022-windows RELEASE",
+      "displayName": "vs2022-windows Release (Base)",
       "toolset": "v143"
     },
     {
-      "name": "vs2022-windows-debug-ae",
-      "inherits": [ "vs2022-windows-debug", "vcpkg", "windows" ],
+      "name": "vs2022-windows-debug-AE",
+      "displayName": "vs2022-windows Debug AE",
+      "inherits": [ "vs2022-windows-debug-base", "vcpkg", "windows" ],
       "cacheVariables": {
         "SKYRIM_AE": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
@@ -129,8 +130,9 @@
       "installDir": "${sourceDir}/install/AE"
     },
     {
-      "name": "vs2022-windows-debug-se",
-      "inherits": [ "vs2022-windows-debug", "vcpkg", "windows" ],
+      "name": "vs2022-windows-debug-SE",
+      "displayName": "vs2022-windows Debug SE",
+      "inherits": [ "vs2022-windows-debug-base", "vcpkg", "windows" ],
       "cacheVariables": {
         "SKYRIM_SE": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
@@ -143,8 +145,9 @@
       "installDir": "${sourceDir}/install/SE"
     },
     {
-      "name": "vs2022-windows-debug-vr",
-      "inherits": [ "vs2022-windows-debug", "vcpkg", "windows" ],
+      "name": "vs2022-windows-debug-VR",
+      "displayName": "vs2022-windows Debug VR",
+      "inherits": [ "vs2022-windows-debug-base", "vcpkg", "windows" ],
       "cacheVariables": {
         "SKYRIM_VR": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
@@ -157,8 +160,9 @@
       "installDir": "${sourceDir}/install/VR"
     },
     {
-      "name": "vs2022-windows-release-ae",
-      "inherits": [ "vs2022-windows-release", "vcpkg", "windows" ],
+      "name": "vs2022-windows-release-AE",
+      "displayName": "vs2022-windows Release AE",
+      "inherits": [ "vs2022-windows-release-base", "vcpkg", "windows" ],
       "cacheVariables": {
         "SKYRIM_AE": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
@@ -171,8 +175,9 @@
       "installDir": "${sourceDir}/install/AE"
     },
     {
-      "name": "vs2022-windows-release-se",
-      "inherits": [ "vs2022-windows-release", "vcpkg", "windows" ],
+      "name": "vs2022-windows-release-SE",
+      "displayName": "vs2022-windows Release SE",
+      "inherits": [ "vs2022-windows-release-base", "vcpkg", "windows" ],
       "cacheVariables": {
         "SKYRIM_SE": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
@@ -185,8 +190,9 @@
       "installDir": "${sourceDir}/install/SE"
     },
     {
-      "name": "vs2022-windows-release-vr",
-      "inherits": [ "vs2022-windows-release", "vcpkg", "windows" ],
+      "name": "vs2022-windows-release-VR",
+      "displayName": "vs2022-windows Release VR",
+      "inherits": [ "vs2022-windows-release-base", "vcpkg", "windows" ],
       "cacheVariables": {
         "SKYRIM_VR": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
@@ -201,51 +207,39 @@
   ],
   "buildPresets": [
     {
-      "name": "Release",
-      "displayName": "Release",
-      "configurePreset": "vs2022-windows-release",
-      "description": "Optimized release build with debug symbols."
-    },
-    {
-      "name": "Debug",
-      "displayName": "Debug",
-      "configurePreset": "vs2022-windows-debug",
-      "description": "Debug build for testing."
-    },
-    {
       "name": "Debug - AE",
       "displayName": "Debug - AE",
-      "configurePreset": "vs2022-windows-debug-ae",
+      "configurePreset": "vs2022-windows-debug-AE",
       "description": "AE"
     },
     {
       "name": "Debug - SE",
       "displayName": "Debug - SE",
-      "configurePreset": "vs2022-windows-debug-se",
+      "configurePreset": "vs2022-windows-debug-SE",
       "description": "SE"
     },
     {
       "name": "Debug - VR",
       "displayName": "Debug - VR",
-      "configurePreset": "vs2022-windows-debug-vr",
+      "configurePreset": "vs2022-windows-debug-VR",
       "description": "VR"
     },
     {
       "name": "Release - AE",
       "displayName": "Release - AE",
-      "configurePreset": "vs2022-windows-release-ae",
+      "configurePreset": "vs2022-windows-release-AE",
       "description": "AE"
     },
     {
       "name": "Release - SE",
       "displayName": "Release - SE",
-      "configurePreset": "vs2022-windows-release-se",
+      "configurePreset": "vs2022-windows-release-SE",
       "description": "SE"
     },
     {
       "name": "Release - VR",
       "displayName": "Release - VR",
-      "configurePreset": "vs2022-windows-release-vr",
+      "configurePreset": "vs2022-windows-release-VR",
       "description": "VR"
     }
   ]
