@@ -33,7 +33,7 @@
 
 Project Stuff:
 - [ ] Refactor System into files that make sense!
-- [x] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
+- [ ] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
 - [ ] Compiled OK in VSCode for all 3 Skyrim Versions
 - [ ] Document configurable folder output for .dll and scripts
 
