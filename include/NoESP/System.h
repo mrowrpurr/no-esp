@@ -79,6 +79,7 @@ namespace NoESP {
             return system;
         }
 
+        bool IsLoaded() { return _loaded; }
         bool IsLoadedOrSetLoaded() { return _loaded.exchange(true); }
         void SetLoaded(bool value = true) { _loaded = value; }
 

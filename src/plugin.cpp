@@ -12,7 +12,18 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* message){
         if (message->type == SKSE::MessagingInterface::kDataLoaded) {
             Logging::Initialize();
-            Config::LoadFromIni();
+            Config::LoadFromIni([](int searchIndex, double radius, long interval){
+                auto& system = System::GetSingleton();
+                while (true) {
+                    if (system.IsLoaded()) {
+                        if (NoESP::Config::LogObjectSearch) {
+                            Log("Search for objects! Search thread #{} Radius:{} IntervalMs:{}", searchIndex, radius, interval);
+                        }
+                        System::CheckForObjectsToAttachScriptsToForObjectsInRangeOfPlayer(radius);
+                    }
+                    std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+                }
+            });
             System::Load();
             SKSE::GetPapyrusInterface()->Register(NoESP::PapyrusInterface::BIND);
         } else if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPostLoadGame) {
