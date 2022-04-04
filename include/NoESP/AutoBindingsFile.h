@@ -84,10 +84,10 @@ namespace NoESP::AutoBindingsFile {
 
         BindingDefinition ParseLine(const std::string& line) {
             BindingDefinition entry;
-            static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*([^|]+))");
-            static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*[^|]+)");
-            static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*[^|]+)");
-            static auto scriptNameOnly = std::regex(R"(^V\s*([^\s]+)\s*[^|]+)");
+            static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)");
+            static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)");
+            static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*$)");
+            static auto scriptNameOnly = std::regex(R"(^\s*([^\s]+)\s*$)");
             std::smatch matches;
             try {
                 if (std::regex_search(line, matches, scriptNameWithPluginFormID)) {
@@ -113,20 +113,22 @@ namespace NoESP::AutoBindingsFile {
                     entry.Type = BindingDefinitionType::FormID;
                     entry.ScriptName = matches[1].str();
                     entry.FormID = 20; // 0x14 which is the PlayerRef
+                } else {
+                    Log("Unknown/Unsupported Entry Line Syntax: '{}'", line);
                 }
             } catch (...) {
                 Log("Error parsing line: '{}'", line);
             }
-            auto propertyDefinitionStartIndex = line.find('|');
-            if (propertyDefinitionStartIndex != std::string::npos && propertyDefinitionStartIndex != line.length() - 1) {
-                auto propertyDefinitionText = line.substr(propertyDefinitionStartIndex + 1); // Everything after the '|'
-                entry.PropertyValues = ParsePropertiesForBinding(propertyDefinitionText);
-            }
+//            auto propertyDefinitionStartIndex = line.find('|');
+//            if (propertyDefinitionStartIndex != std::string::npos && propertyDefinitionStartIndex != line.length() - 1) {
+//                auto propertyDefinitionText = line.substr(propertyDefinitionStartIndex + 1); // Everything after the '|'
+//                entry.PropertyValues = ParsePropertiesForBinding(propertyDefinitionText);
+//            }
             return entry;
         }
     }
 
-    void Read(std::function<void(const BindingDefinition& entry)> entryCallback, const std::string& bindingFilesDirectory = "Data/Scripts/AutoBindings") {
+    void Read(std::function<void(BindingDefinition& entry)> entryCallback, const std::string& bindingFilesDirectory = "Data/Scripts/AutoBindings") {
         if (! std::filesystem::is_directory(bindingFilesDirectory))
             return;
 
@@ -160,11 +162,18 @@ namespace NoESP::AutoBindingsFile {
                             }
 
                             // Parse the (trimmed) line
-                            auto entry = ParseLine(line);
-                            Log("ENTRY WITH {} PROPERTIES", entry.PropertyValues.size());
-                            if (entry.Type != BindingDefinitionType::Invalid) {
-                                entry.Filename = file.path().string();
-                                entryCallback(entry);
+                            try {
+                                auto entry = ParseLine(line);
+                                if (entry.Type != BindingDefinitionType::Invalid) {
+                                    entry.Filename = file.path().string();
+                                    try {
+                                        entryCallback(entry);
+                                    } catch (...) {
+                                        Log("[Internal] AutoBinding entry discovery callback failed for '{}'", line);
+                                    }
+                                }
+                            } catch (...) {
+                                Log("Failed to parse entry line '{}'", line);
                             }
                         }
                     }

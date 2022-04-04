@@ -40,7 +40,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void SetProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, const FormPropertyMap& propertyMap) {
+    void SetProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& propertyMap) {
         auto* typeInfo = object->GetTypeInfo();
         auto* properties = typeInfo->GetPropertyIter();
         for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
@@ -48,9 +48,12 @@ namespace NoESP::PapyrusScriptBindings {
             auto propertyName = properties[i].name;
             auto* propertyVariable = object->GetProperty(propertyName);
             if (propertyMap.contains(Utilities::ToLowerCase(propertyName.c_str()))) {
+
+                // TODO make sure we do lowercase all the things!
+
                 // TODO - caching!
                 if (propertyVariable->IsString()) {
-                    Log("OMG A STRING! '{}' => '{}'", propertyName.c_str(), propertyMap[propertyName.c_str()].PropertyValueText);
+                    Log("OMG A STRING! '{}' => '{}'", propertyName.c_str(), propertyMap[std::string(propertyName.c_str())].PropertyValueText);
                 } else {
                     Log("Unsupported property type for '{}'", propertyName.c_str());
                 }
@@ -58,7 +61,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToForm(std::string scriptName, const RE::TESForm& form, const FormPropertyMap& propertiesToSet, bool addOnce = false) {
+    void BindToForm(std::string scriptName, const RE::TESForm& form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
         bool autoFillProperties = true;
         if (scriptName.starts_with('!')) {
             autoFillProperties = false;
@@ -114,7 +117,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToFormPointer(std::string scriptName, RE::TESForm* form, const FormPropertyMap& propertiesToSet, bool addOnce = false) {
+    void BindToFormPointer(std::string scriptName, RE::TESForm* form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
         if (! form) return;
 
         bool autoFillProperties = true;
@@ -164,7 +167,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToEditorId(const std::string& scriptName, const std::string& editorId, const FormPropertyMap& propertiesToSet, bool addOnce = false) {
+    void BindToEditorId(const std::string& scriptName, const std::string& editorId, FormPropertyMap& propertiesToSet, bool addOnce = false) {
         auto* form = RE::TESForm::LookupByEditorID(editorId);
         if (form) {
             BindToFormPointer(scriptName, form, propertiesToSet, addOnce);
@@ -173,7 +176,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToFormId(const std::string& scriptName, RE::FormID formId, const FormPropertyMap& propertiesToSet, const std::string optionalPluginFile = "", bool addOnce = false) {
+    void BindToFormId(const std::string& scriptName, RE::FormID formId, FormPropertyMap& propertiesToSet, const std::string optionalPluginFile = "", bool addOnce = false) {
         Log("Bind script '{}' to form ID 0x{:x}", scriptName, formId);
         if (optionalPluginFile.empty()) {
             auto* form = RE::TESForm::LookupByID(formId);
@@ -197,7 +200,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void Bind(const BindingDefinition& def) {
+    void Bind(BindingDefinition& def) {
         try {
             if (def.Type == BindingDefinitionType::EditorID && def.EditorIdMatcher.Type == EditorIdMatcherType::Exact) {
                 BindToEditorId(def.ScriptName, def.EditorIdMatcher.Text, def.PropertyValues, def.AddOnce);
