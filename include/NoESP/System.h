@@ -3,9 +3,11 @@
 #include <atomic>
 #include <chrono>
 #include <regex>
+#include <utility>
 #include <vector>
 
 #include <RE/C/ConsoleLog.h>
+#include <RE/T/TES.h>
 #include <RE/T/TESDataHandler.h>
 #include <RE/T/TESObjectREFR.h>
 #include <RE/U/UI.h>
@@ -165,7 +167,7 @@ namespace NoESP {
             }
         }
 
-        static void TryBindReference(RE::TESObjectREFR* ref) {
+        static void TryBindReferencePointer(RE::TESObjectREFR* ref) {
             if (ref->IsDeleted()) return;
 
             std::set<std::string> scriptsToBind;
@@ -197,13 +199,49 @@ namespace NoESP {
             // Bind the scripts!
             for (const auto& scriptName : scriptsToBind) {
                 system.TryLinkScript(scriptName);
+                PapyrusScriptBindings::BindToFormPointer(scriptName, ref, true);
+            }
+        }
+
+        static void TryBindReference(RE::TESObjectREFR& ref) {
+            if (ref.IsDeleted()) return;
+
+            std::set<std::string> scriptsToBind;
+            auto& system = System::GetSingleton();
+            auto* baseForm = ref.GetBaseObject();
+
+            // Check 3 things...
+            // 1: BaseForm
+            for (const auto& scriptName : system.ScriptsForBaseForm(baseForm->formID)) {
+                scriptsToBind.insert(scriptName);
+            }
+            // 2: Keywords
+            for (const auto& [keyword, scriptNames] : system.GetScriptNamesForKeywords()) {
+                if (ref.HasKeyword(keyword)) {
+                    for (const auto& scriptName : scriptNames) {
+                        scriptsToBind.insert(scriptName);
+                    }
+                }
+            }
+            // 3: FormList presence
+            for (const auto& [formList, scriptNames] : system.GetScriptNamesForFormLists()) {
+                if (formList->HasForm(&ref) || formList->HasForm(baseForm)) {
+                    for (const auto& scriptName : scriptNames) {
+                        scriptsToBind.insert(scriptName);
+                    }
+                }
+            }
+
+            // Bind the scripts!
+            for (const auto& scriptName : scriptsToBind) {
+                system.TryLinkScript(scriptName);
                 PapyrusScriptBindings::BindToForm(scriptName, ref, true);
             }
         }
 
         struct OnObjectInitialization {
             static void thunk(RE::TESObjectREFR* ref) {
-                TryBindReference(ref);
+                TryBindReferencePointer(ref);
                 func(ref);
             }
             static inline REL::Relocation<decltype(thunk)> func;
@@ -224,10 +262,21 @@ namespace NoESP {
                 const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
                 for (auto iterator = literallyEveryFormInTheGame->begin(); iterator != literallyEveryFormInTheGame->end(); iterator++) {
                     auto* ref = iterator->second->AsReference();
-                    if (ref) TryBindReference(ref);
+                    if (ref) TryBindReferencePointer(ref);
                 }
                 system.SetLookingAtAllScripts(false);
             }
+        }
+
+        static void CheckForObjectsToAttachScriptsToForObjectsInRange(RE::TESObjectREFR* center, float radius) {
+            RE::TES::GetSingleton()->ForEachReferenceInRange(center, radius, [](RE::TESObjectREFR& ref){
+                TryBindReference(ref);
+                return true;
+            });
+        }
+
+        static void CheckForObjectsToAttachScriptsToForObjectsInRangeOfPlayer(float radius) {
+            CheckForObjectsToAttachScriptsToForObjectsInRange(RE::PlayerCharacter::GetSingleton(), radius);
         }
 
         static void ListenForFirstLocationLoad() {

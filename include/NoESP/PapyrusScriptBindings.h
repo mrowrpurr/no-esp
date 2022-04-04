@@ -38,7 +38,55 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToForm(std::string scriptName, RE::TESForm* form, bool addOnce = false) {
+    void BindToForm(std::string scriptName, const RE::TESForm& form, bool addOnce = false) {
+        bool autoFillProperties = true;
+        if (scriptName.starts_with('!')) {
+            autoFillProperties = false;
+            scriptName = scriptName.substr(1); // Remove '!'
+        }
+
+        try {
+            auto* vm = VirtualMachine::GetSingleton();
+            auto* handlePolicy = vm->GetObjectHandlePolicy();
+            RE::VMHandle handle = handlePolicy->GetHandleForObject(form.GetFormType(), (RE::TESForm*) &form);
+            if (handle) {
+
+                // If there is already a script with the same name attached to this object, don't bind a new one
+                RE::BSFixedString caseInsensitiveScriptName = scriptName;
+                if (addOnce) {
+                    if (vm->attachedScripts.contains(handle)) {
+                        for (auto& attachedScript : vm->attachedScripts.find(handle)->second) {
+                            if (attachedScript->GetTypeInfo()->GetName() == caseInsensitiveScriptName) {
+                                return; // Don't bind! Already bound!
+                            }
+                        }
+                    }
+                }
+
+                RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+                vm->CreateObject(scriptName, objectPtr);
+                auto* bindPolicy = vm->GetObjectBindPolicy();
+                if (autoFillProperties) {
+                    BindObjectProperties(objectPtr);
+                }
+                bindPolicy->BindObject(objectPtr, handle);
+
+                auto* ref = form.AsReference();
+                if (ref) {
+                    auto* baseForm = ref->GetBaseObject();
+                    Log("Bound script '{}' to reference '{}' 0x{:x} (base '{}' 0x{:x})!", scriptName, form.GetName(), form.formID, baseForm->GetName(), baseForm->formID);
+                } else {
+                    Log("Bound script '{}' to form '{}' 0x{:x}!", scriptName, form.GetName(), form.formID);
+                }
+            } else {
+                Log("Error getting handle for script {} to reference", scriptName);
+            }
+        } catch (...) {
+            Log("Error binding script {} to reference", scriptName);
+        }
+    }
+
+    void BindToFormPointer(std::string scriptName, RE::TESForm* form, bool addOnce = false) {
         if (! form) return;
 
         bool autoFillProperties = true;
@@ -91,7 +139,7 @@ namespace NoESP::PapyrusScriptBindings {
     void BindToEditorId(const std::string& scriptName, const std::string& editorId, bool addOnce = false) {
         auto* form = RE::TESForm::LookupByEditorID(editorId);
         if (form) {
-            BindToForm(scriptName, form, addOnce);
+            BindToFormPointer(scriptName, form, addOnce);
         } else {
             Log("Could not find Form via Editor ID: '{}' for script '{}'", editorId, scriptName);
         }
@@ -101,7 +149,7 @@ namespace NoESP::PapyrusScriptBindings {
         if (optionalPluginFile.empty()) {
             auto* form = RE::TESForm::LookupByID(formId);
             if (form) {
-                BindToForm(scriptName, form, addOnce);
+                BindToFormPointer(scriptName, form, addOnce);
             } else {
                 Log("Could not find Form via Form ID: '{}' for script '{}'", formId, scriptName);
             }
@@ -110,7 +158,7 @@ namespace NoESP::PapyrusScriptBindings {
             if (dataHandler->GetModIndex(optionalPluginFile) != 255) {
                 auto* form = dataHandler->LookupForm(formId, optionalPluginFile);
                 if (form) {
-                    BindToForm(scriptName, form, addOnce);
+                    BindToFormPointer(scriptName, form, addOnce);
                 } else {
                     Log("Could not find Form via Form ID: '{}' in plugin '{}' for script '{}'", formId, optionalPluginFile, scriptName);
                 }

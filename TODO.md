@@ -41,7 +41,7 @@ Features:
 - [x] Process every reference in the game on game load
   - [x] Capture Main Menu visit or leave
 - [ ] Can provide the name of a form type, e.g. `BOOK`
-- [ ] Papyrus function which will process every form in the game for script attachment
+- [x] Papyrus function which will process every form in the game for script attachment
 - [ ] Papyrus function which will process every object near the player or an object or a point in space
 
 # Config:
@@ -52,6 +52,9 @@ Features:
 # Logs:
 - [x] Add a .log file specifically for no-esp (rewrite with each game rerun) 
 
-## Later:
+## Soon:
 - [ ] Refactor System into files that make sense!
+- [ ] Support setting property values in-line for simple literal values and anything based on an editor ID or formID/esp pair
+
+## Later:
 - [ ] Skyrim LE
