@@ -93,7 +93,7 @@ namespace NoESP {
             if (HasScriptBeenLinked(scriptName)) return ScriptLinkWasSuccessful(scriptName);
             auto* vm = VirtualMachine::GetSingleton();
              try {
-                 vm->linker.Process(scriptName);
+                 vm->linker.Process(scriptName); // This returns a bool, do we want it? What does it return for already loaded scripts, true or false?
                  SetScriptLinkWorkedOK(scriptName, true);
                  return true;
              } catch (...) {
@@ -136,10 +136,14 @@ namespace NoESP {
         }
 
         void BindFormIdsToScripts() {
+            Log("Binding Form IDs to Scripts");
             for (const auto& [formId, scriptNames] : _formIdsToScriptNames) {
                 for (const auto& scriptName : scriptNames) {
-                    TryLinkScript(scriptName);
-                    PapyrusScriptBindings::BindToFormId(scriptName, formId);
+                    if (TryLinkScript(scriptName)) {
+                        PapyrusScriptBindings::BindToFormId(scriptName, formId);
+                    } else {
+                        Log("Failed to link script '{}' to bind form 0x{:x} to", scriptName, formId);
+                    }
                 }
             }
         }

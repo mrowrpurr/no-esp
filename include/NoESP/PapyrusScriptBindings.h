@@ -15,7 +15,7 @@ using namespace RE::BSScript::Internal;
 
 namespace NoESP::PapyrusScriptBindings {
 
-    void BindObjectProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object) {
+    void AutoFillProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object) {
         auto* typeInfo = object->GetTypeInfo();
         auto* properties = typeInfo->GetPropertyIter();
         for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
@@ -33,6 +33,26 @@ namespace NoESP::PapyrusScriptBindings {
                     auto* bindPolicy = vm->GetObjectBindPolicy();
                     bindPolicy->BindObject(objectPtr, handle);
                     propertyVariable->SetObject(objectPtr);
+                } else {
+                    // TODO - support all other property types! the primitives!
+                }
+            }
+        }
+    }
+
+    void SetProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, std::unordered_map<std::string, PropertyValue> propertyMap) {
+        auto* typeInfo = object->GetTypeInfo();
+        auto* properties = typeInfo->GetPropertyIter();
+        for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
+            auto typeName = properties[i].info.type.GetTypeInfo()->GetName();
+            auto propertyName = properties[i].name;
+            auto* propertyVariable = object->GetProperty(propertyName);
+            if (propertyMap.contains(Utilities::ToLowerCase(propertyName.c_str()))) {
+                // TODO - caching!
+                if (propertyVariable->IsString()) {
+                    Log("OMG A STRING! '{}' => '{}'", propertyName.c_str(), propertyMap[propertyName.c_str()].PropertyValueText);
+                } else {
+                    Log("Unsupported property type for '{}'", propertyName.c_str());
                 }
             }
         }
@@ -67,9 +87,17 @@ namespace NoESP::PapyrusScriptBindings {
                 vm->CreateObject(scriptName, objectPtr);
                 auto* bindPolicy = vm->GetObjectBindPolicy();
                 if (autoFillProperties) {
-                    BindObjectProperties(objectPtr);
+                    AutoFillProperties(objectPtr);
                 }
-                bindPolicy->BindObject(objectPtr, handle);
+//                if (def) {
+//                    SetProperties(objectPtr, def->PropertyValues);
+//                }
+                try {
+                    bindPolicy->BindObject(objectPtr, handle);
+                } catch (...) {
+                    Log("Failed to bind object to handle for '{}'", scriptName);
+                    return;
+                }
 
                 auto* ref = form.AsReference();
                 if (ref) {
@@ -117,7 +145,7 @@ namespace NoESP::PapyrusScriptBindings {
                 vm->CreateObject(scriptName, objectPtr);
                 auto* bindPolicy = vm->GetObjectBindPolicy();
                 if (autoFillProperties) {
-                    BindObjectProperties(objectPtr);
+                    AutoFillProperties(objectPtr);
                 }
                 bindPolicy->BindObject(objectPtr, handle);
 
@@ -146,6 +174,7 @@ namespace NoESP::PapyrusScriptBindings {
     }
 
     void BindToFormId(const std::string& scriptName, RE::FormID formId, const std::string optionalPluginFile = "", bool addOnce = false) {
+        Log("Bind script '{}' to form ID 0x{:x}", scriptName, formId);
         if (optionalPluginFile.empty()) {
             auto* form = RE::TESForm::LookupByID(formId);
             if (form) {

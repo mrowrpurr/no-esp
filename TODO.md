@@ -43,7 +43,7 @@ Features:
 - [ ] Can provide the name of a form type, e.g. `BOOK`
 - [x] Papyrus function which will process every form in the game for script attachment
 - [x] Papyrus function which will process every object near the player or an object or a point in space
-- [ ] .ini config for searching nearby on a regular basis
+- [x] .ini config for searching nearby on a regular basis
 
 # Config:
 - [x] Add .ini file support
@@ -53,9 +53,15 @@ Features:
 # Logs:
 - [x] Add a .log file specifically for no-esp (rewrite with each game rerun) 
 
+# Property Setting:
+- [ ] Try getting property types FROM OBJECTS rather than the raw type <---
+- [ ] Can you list properties from the Main Menu? NO - CANNOT GET TYPES!
+  - [ ] What if not loaded, can you Process via linker from that context?
+  - [ ] Goal: eager loading of property types to not do checking at runtime
+- [ ] Support setting property values in-line for simple literal values and anything based on an editor ID or formID/esp pair
+
 ## Soon:
 - [ ] Refactor System into files that make sense!
-- [ ] Support setting property values in-line for simple literal values and anything based on an editor ID or formID/esp pair
 
 ## Later:
 - [ ] Skyrim LE

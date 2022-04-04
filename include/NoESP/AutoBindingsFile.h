@@ -41,7 +41,7 @@ namespace NoESP::AutoBindingsFile {
                     auto propertyName = matches[1].str();
                     auto propertyValue = matches[2].str();
                     PropertyValue property;
-                    property.PropertyName = propertyName;
+                    property.PropertyName = Utilities::ToLowerCase(propertyName);
                     property.PropertyValueText = propertyValue;
                     properties.insert_or_assign(propertyName, property);
                     text = std::format("{}{}", text.substr(0, matches.position()), text.substr(matches.position() + matches[1].length() + 2 + matches[2].length() + 2)); // 2 for '='? and 2 for '""'
@@ -49,7 +49,7 @@ namespace NoESP::AutoBindingsFile {
                     auto propertyName = matches[1].str();
                     auto propertyValue = matches[2].str();
                     PropertyValue property;
-                    property.PropertyName = propertyName;
+                    property.PropertyName = Utilities::ToLowerCase(propertyName);
                     property.PropertyValueText = propertyValue;
                     properties.insert_or_assign(propertyName, property);
                     text = std::format("{}{}", text.substr(0, matches.position()), text.substr(matches.position() + matches[1].length() + 2 + matches[2].length())); // 2 for '='?
