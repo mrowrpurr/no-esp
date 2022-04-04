@@ -8,12 +8,14 @@ namespace NoESP::PapyrusInterface {
 
     void BindScript_ToForm(RE::StaticFunctionTag*, std::string scriptName, RE::TESForm* form, bool addOnce = false) {
         if (!System::GetSingleton().TryLinkScript(scriptName)) return;
-        PapyrusScriptBindings::BindToFormPointer(scriptName, form, addOnce);
+        FormPropertyMap propertyMap;
+        PapyrusScriptBindings::BindToFormPointer(scriptName, form, propertyMap, addOnce);
     }
 
     void BindScript_ToEditorId(RE::StaticFunctionTag*, std::string scriptName, std::string editorId, bool addOnce = false) {
         if (!System::GetSingleton().TryLinkScript(scriptName)) return;
-        PapyrusScriptBindings::BindToEditorId(scriptName, editorId, addOnce);
+        FormPropertyMap propertyMap;
+        PapyrusScriptBindings::BindToEditorId(scriptName, editorId, propertyMap, addOnce);
     }
 
     void BindScript_RefreshAllObjectReferences(RE::StaticFunctionTag*) {

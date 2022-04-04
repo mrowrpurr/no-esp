@@ -40,7 +40,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void SetProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, std::unordered_map<std::string, PropertyValue> propertyMap) {
+    void SetProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, const FormPropertyMap& propertyMap) {
         auto* typeInfo = object->GetTypeInfo();
         auto* properties = typeInfo->GetPropertyIter();
         for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
@@ -58,7 +58,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToForm(std::string scriptName, const RE::TESForm& form, bool addOnce = false) {
+    void BindToForm(std::string scriptName, const RE::TESForm& form, const FormPropertyMap& propertiesToSet, bool addOnce = false) {
         bool autoFillProperties = true;
         if (scriptName.starts_with('!')) {
             autoFillProperties = false;
@@ -114,7 +114,7 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToFormPointer(std::string scriptName, RE::TESForm* form, bool addOnce = false) {
+    void BindToFormPointer(std::string scriptName, RE::TESForm* form, const FormPropertyMap& propertiesToSet, bool addOnce = false) {
         if (! form) return;
 
         bool autoFillProperties = true;
@@ -164,21 +164,21 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void BindToEditorId(const std::string& scriptName, const std::string& editorId, bool addOnce = false) {
+    void BindToEditorId(const std::string& scriptName, const std::string& editorId, const FormPropertyMap& propertiesToSet, bool addOnce = false) {
         auto* form = RE::TESForm::LookupByEditorID(editorId);
         if (form) {
-            BindToFormPointer(scriptName, form, addOnce);
+            BindToFormPointer(scriptName, form, propertiesToSet, addOnce);
         } else {
             Log("Could not find Form via Editor ID: '{}' for script '{}'", editorId, scriptName);
         }
     }
 
-    void BindToFormId(const std::string& scriptName, RE::FormID formId, const std::string optionalPluginFile = "", bool addOnce = false) {
+    void BindToFormId(const std::string& scriptName, RE::FormID formId, const FormPropertyMap& propertiesToSet, const std::string optionalPluginFile = "", bool addOnce = false) {
         Log("Bind script '{}' to form ID 0x{:x}", scriptName, formId);
         if (optionalPluginFile.empty()) {
             auto* form = RE::TESForm::LookupByID(formId);
             if (form) {
-                BindToFormPointer(scriptName, form, addOnce);
+                BindToFormPointer(scriptName, form, propertiesToSet, addOnce);
             } else {
                 Log("Could not find Form via Form ID: '{}' for script '{}'", formId, scriptName);
             }
@@ -187,7 +187,7 @@ namespace NoESP::PapyrusScriptBindings {
             if (dataHandler->GetModIndex(optionalPluginFile) != 255) {
                 auto* form = dataHandler->LookupForm(formId, optionalPluginFile);
                 if (form) {
-                    BindToFormPointer(scriptName, form, addOnce);
+                    BindToFormPointer(scriptName, form, propertiesToSet, addOnce);
                 } else {
                     Log("Could not find Form via Form ID: '{}' in plugin '{}' for script '{}'", formId, optionalPluginFile, scriptName);
                 }
@@ -200,9 +200,9 @@ namespace NoESP::PapyrusScriptBindings {
     void Bind(const BindingDefinition& def) {
         try {
             if (def.Type == BindingDefinitionType::EditorID && def.EditorIdMatcher.Type == EditorIdMatcherType::Exact) {
-                BindToEditorId(def.ScriptName, def.EditorIdMatcher.Text, def.AddOnce);
+                BindToEditorId(def.ScriptName, def.EditorIdMatcher.Text, def.PropertyValues, def.AddOnce);
             } else if (def.Type == BindingDefinitionType::FormID) {
-                BindToFormId(def.ScriptName, def.FormID, def.Plugin, def.AddOnce);
+                BindToFormId(def.ScriptName, def.FormID, def.PropertyValues, def.Plugin, def.AddOnce);
             }
         } catch (...) {
             if (def.Filename.empty()) {

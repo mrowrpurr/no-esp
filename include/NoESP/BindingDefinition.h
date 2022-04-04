@@ -7,7 +7,7 @@ namespace NoESP {
 
     enum BindingDefinitionType { EditorID, FormID, Invalid };
     enum EditorIdMatcherType { Exact, PrefixMatch, SuffixMatch, PrefixAndSuffixMatch, RegularExpression };
-    enum PropertyType { IntProperty, FloatProperty, BoolProperty, StringProperty, ScriptProperty, UnknownPropertyType };
+    enum PropertyType { IntProperty, FloatProperty, BoolProperty, StringProperty, ScriptProperty, PropertyTypeNotLoaded, PropertyTypeLookupFailed };
 
     struct EditorIdMatcher {
         EditorIdMatcherType Type;
@@ -18,8 +18,10 @@ namespace NoESP {
     struct PropertyValue {
         std::string PropertyName;
         std::string PropertyValueText;
-        PropertyType PropertyType = PropertyType::UnknownPropertyType;
+        PropertyType PropertyType = PropertyType::PropertyTypeNotLoaded;
     };
+
+    typedef std::unordered_map<std::string, PropertyValue> FormPropertyMap;
 
     struct BindingDefinition {
         bool AddOnce = true; // Currently, ALWAYS set to true
@@ -27,7 +29,7 @@ namespace NoESP {
         std::string ScriptName;
         std::string Plugin;
         int FormID = 0;
-        std::unordered_map<std::string, PropertyValue> PropertyValues;
+        FormPropertyMap PropertyValues;
         BindingDefinitionType Type = BindingDefinitionType::Invalid;
         EditorIdMatcher EditorIdMatcher;
     };

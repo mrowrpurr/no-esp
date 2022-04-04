@@ -57,7 +57,7 @@ namespace NoESP {
         // [Generic Forms]
         // This is taken directly from the AutoBindings and maps to whatever is defined in the file.
         // The collections BELOW are inferred from these raw form bindings.
-        std::unordered_map<RE::FormID, std::set<std::string>> _formIdsToScriptNames;
+        std::unordered_map<RE::FormID, std::unordered_map<std::string, FormPropertyMap>> _formIdsToScriptNames;
 
         // [Base Forms]
         // Map reference base form IDs --> scripts to attach on object load
@@ -102,12 +102,25 @@ namespace NoESP {
              }
         }
 
-        void AddFormIdForScript(RE::FormID formId, const std::string& scriptName) {
+        void MergeProperties(FormPropertyMap& baseMap, const FormPropertyMap& overrideMap) {
+            for (const auto& [propertyName, propertyValue] : overrideMap) {
+                baseMap.insert_or_assign(propertyName, propertyValue);
+            }
+        }
+
+        void AddFormIdForScript(RE::FormID formId, const std::string& scriptName, const FormPropertyMap& propertiesToSet) {
             if (_formIdsToScriptNames.contains(formId)) {
-                _formIdsToScriptNames[formId].insert(scriptName);
+                auto& map = _formIdsToScriptNames[formId];
+                if (map.contains(scriptName)) {
+                    auto& existingPropertiesForScript = map[scriptName];
+                    MergeProperties(existingPropertiesForScript, propertiesToSet);
+                } else {
+                    map.insert_or_assign(scriptName, propertiesToSet);
+                }
             } else {
-                std::set<std::string> scriptNames{scriptName};
-                _formIdsToScriptNames.try_emplace(formId, scriptNames);
+                std::unordered_map<std::string, FormPropertyMap> scriptNameWithProperties;
+                scriptNameWithProperties.insert_or_assign(scriptName, propertiesToSet);
+                _formIdsToScriptNames.insert_or_assign(formId, scriptNameWithProperties);
             }
         }
         void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName) {
@@ -137,10 +150,10 @@ namespace NoESP {
 
         void BindFormIdsToScripts() {
             Log("Binding Form IDs to Scripts");
-            for (const auto& [formId, scriptNames] : _formIdsToScriptNames) {
-                for (const auto& scriptName : scriptNames) {
+            for (const auto& [formId, scriptNamesAndPropertyMaps] : _formIdsToScriptNames) {
+                for (const auto& [scriptName, propertyMap] : scriptNamesAndPropertyMaps) {
                     if (TryLinkScript(scriptName)) {
-                        PapyrusScriptBindings::BindToFormId(scriptName, formId);
+                        PapyrusScriptBindings::BindToFormId(scriptName, formId, propertyMap);
                     } else {
                         Log("Failed to link script '{}' to bind form 0x{:x} to", scriptName, formId);
                     }
@@ -211,7 +224,7 @@ namespace NoESP {
         static void TryBindReference(RE::TESObjectREFR& ref) {
             if (ref.IsDeleted()) return;
 
-            std::set<std::string> scriptsToBind;
+            std::unordered_map<std::string, FormPropertyMap> scriptsToBindWithProperties;
             auto& system = System::GetSingleton();
             auto* baseForm = ref.GetBaseObject();
 
@@ -315,17 +328,17 @@ namespace NoESP {
             );
         }
 
-        static void SetupFormBindings(RE::TESForm* form, const std::string& scriptName) {
+        static void SetupFormBindings(RE::TESForm* form, const std::string& scriptName, const FormPropertyMap& propertiesToSet) {
             auto& system = System::GetSingleton();
             if (form) {
-                system.AddFormIdForScript(form->formID, scriptName);
+                system.AddFormIdForScript(form->formID, scriptName, propertiesToSet); // TODO - attach the property map
                 if (! form->AsReference()) {
                     if (form->GetFormType() == RE::FormType::Keyword) {
-                        system.AddKeywordIdForScript(form->As<RE::BGSKeyword>(), scriptName);
+                        system.AddKeywordIdForScript(form->As<RE::BGSKeyword>(), scriptName); // TODO - attach the property map
                     } else if (form->GetFormType() == RE::FormType::FormList) {
-                        system.AddFormListIdForScript(form->As<RE::BGSListForm>(), scriptName);
+                        system.AddFormListIdForScript(form->As<RE::BGSListForm>(), scriptName); // TODO - attach the property script
                     } else {
-                        system.AddBaseFormIdForScript(form->formID, scriptName);
+                        system.AddBaseFormIdForScript(form->formID, scriptName); // TODO - attach the property script
                     }
                 }
             }
@@ -333,8 +346,9 @@ namespace NoESP {
 
         static void ReadAutoBindingsFiles() {
             auto& system = System::GetSingleton();
-            std::vector<std::pair<EditorIdMatcher, std::string>> editorIdMatcherPairs;
-            AutoBindingsFile::Read([&system, &editorIdMatcherPairs](const BindingDefinition& entry){
+            std::vector<std::tuple<EditorIdMatcher, std::string, FormPropertyMap>> editorIdMatchers;
+
+            AutoBindingsFile::Read([&system, &editorIdMatchers](const BindingDefinition& entry){
                 RE::TESForm* form = nullptr;
                 if (entry.Type == BindingDefinitionType::FormID && entry.Plugin.empty()) {
                     form = RE::TESForm::LookupByID(entry.FormID);
@@ -347,19 +361,21 @@ namespace NoESP {
                         form = RE::TESForm::LookupByEditorID(entry.EditorIdMatcher.Text);
                         if (! form) Log("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorIdMatcher.Text);
                     } else {
-                        std::pair<EditorIdMatcher, std::string> pair{entry.EditorIdMatcher, entry.ScriptName};
-                        editorIdMatcherPairs.emplace_back(pair);
+                        std::tuple<EditorIdMatcher, std::string, FormPropertyMap> values{entry.EditorIdMatcher, entry.ScriptName, entry.PropertyValues};
+                        editorIdMatchers.emplace_back(values);
                     }
                 }
-                if (form) SetupFormBindings(form, entry.ScriptName);
+                if (form) SetupFormBindings(form, entry.ScriptName, entry.PropertyValues);
             });
-            if (! editorIdMatcherPairs.empty()) {
+
+            // If any scrips want to match on editor ID, run all of those matchers!
+            if (! editorIdMatchers.empty()) {
                 const auto& [map, lock] = RE::TESForm::GetAllFormsByEditorID();
-                // O(log(n)) - Hooray!
+                // O(log(n)) - Hooray! Can't use an inner O(1) lookup because it hast to use text matching / regex for each editor ID to see if it matches
                 for (auto iterator = map->begin(); iterator != map->end(); iterator++) {
-                    for (const auto& [matcher, scriptName] : editorIdMatcherPairs) {
+                    for (const auto& [matcher, scriptName, propertiesToSet] : editorIdMatchers) {
                         if (DoesEditorIdMatch(matcher, iterator->first.c_str())) {
-                            SetupFormBindings(iterator->second, scriptName);
+                            SetupFormBindings(iterator->second, scriptName, propertiesToSet);
                         }
                     }
                 }
