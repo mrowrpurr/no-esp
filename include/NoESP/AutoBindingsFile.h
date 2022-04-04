@@ -30,6 +30,36 @@ namespace NoESP::AutoBindingsFile {
             return result;
         }
 
+        std::unordered_map<std::string, PropertyValue> ParsePropertiesForBinding(const std::string& propertiesTextDefinition) {
+            static auto nextPropertyPatternQuoted = std::regex(R"(\s*([^=\s]+)=\"([^\"]+)\".*)");
+            static auto nextPropertyPattern = std::regex(R"(\s*([^=\s]+)=([^\s]+).*)");
+            std::unordered_map<std::string, PropertyValue> properties;
+            std::string text = propertiesTextDefinition;
+            std::smatch matches;
+            while (true) {
+                if (std::regex_search(text, matches, nextPropertyPatternQuoted)) {
+                    auto propertyName = matches[1].str();
+                    auto propertyValue = matches[2].str();
+                    PropertyValue property;
+                    property.PropertyName = propertyName;
+                    property.PropertyValueText = propertyValue;
+                    properties.insert_or_assign(propertyName, property);
+                    text = std::format("{}{}", text.substr(0, matches.position()), text.substr(matches.position() + matches[1].length() + 2 + matches[2].length() + 2)); // 2 for '='? and 2 for '""'
+                } else if (std::regex_search(text, matches, nextPropertyPattern) || std::regex_search(text, matches, nextPropertyPattern)) {
+                    auto propertyName = matches[1].str();
+                    auto propertyValue = matches[2].str();
+                    PropertyValue property;
+                    property.PropertyName = propertyName;
+                    property.PropertyValueText = propertyValue;
+                    properties.insert_or_assign(propertyName, property);
+                    text = std::format("{}{}", text.substr(0, matches.position()), text.substr(matches.position() + matches[1].length() + 2 + matches[2].length())); // 2 for '='?
+                } else {
+                    break;
+                }
+            }
+            return properties;
+        }
+
         EditorIdMatcher ParseEditorIdMatchText(const std::string& editorIdText) {
             EditorIdMatcher matcher;
             auto editorId = Utilities::ToLowerCase(editorIdText);
@@ -54,10 +84,10 @@ namespace NoESP::AutoBindingsFile {
 
         BindingDefinition ParseLine(const std::string& line) {
             BindingDefinition entry;
-            static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)");
-            static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)");
-            static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*$)");
-            static auto scriptNameOnly = std::regex(R"(^\s*([^\s]+)\s*$)");
+            static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*([^|]+))");
+            static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*[^|]+)");
+            static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*[^|]+)");
+            static auto scriptNameOnly = std::regex(R"(^V\s*([^\s]+)\s*[^|]+)");
             std::smatch matches;
             try {
                 if (std::regex_search(line, matches, scriptNameWithPluginFormID)) {
@@ -86,6 +116,11 @@ namespace NoESP::AutoBindingsFile {
                 }
             } catch (...) {
                 Log("Error parsing line: '{}'", line);
+            }
+            auto propertyDefinitionStartIndex = line.find('|');
+            if (propertyDefinitionStartIndex != std::string::npos && propertyDefinitionStartIndex != line.length() - 1) {
+                auto propertyDefinitionText = line.substr(propertyDefinitionStartIndex + 1); // Everything after the '|'
+                entry.PropertyValues = ParsePropertiesForBinding(propertyDefinitionText);
             }
             return entry;
         }
@@ -124,7 +159,9 @@ namespace NoESP::AutoBindingsFile {
                                 else line = line.substr(0, commentStartIndex);
                             }
 
+                            // Parse the (trimmed) line
                             auto entry = ParseLine(line);
+                            Log("ENTRY WITH {} PROPERTIES", entry.PropertyValues.size());
                             if (entry.Type != BindingDefinitionType::Invalid) {
                                 entry.Filename = file.path().string();
                                 entryCallback(entry);
