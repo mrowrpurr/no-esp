@@ -42,7 +42,8 @@ Features:
   - [x] Capture Main Menu visit or leave
 - [ ] Can provide the name of a form type, e.g. `BOOK`
 - [x] Papyrus function which will process every form in the game for script attachment
-- [ ] Papyrus function which will process every object near the player or an object or a point in space
+- [x] Papyrus function which will process every object near the player or an object or a point in space
+- [ ] .ini config for searching nearby on a regular basis
 
 # Config:
 - [x] Add .ini file support
