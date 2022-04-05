@@ -16,27 +16,59 @@ using namespace RE::BSScript::Internal;
 namespace NoESP::PapyrusScriptBindings {
 
     void AutoFillProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object) {
+//        if (true) return; // Come back to this...
+
         auto* typeInfo = object->GetTypeInfo();
         auto* properties = typeInfo->GetPropertyIter();
         for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
-            auto typeName = properties[i].info.type.GetTypeInfo()->GetName();
             auto propertyName = properties[i].name;
-            auto* propertyVariable = object->GetProperty(propertyName);
-            if (propertyVariable->IsObject()) {
-                auto* form = RE::TESForm::LookupByEditorID(propertyName);
-                if (form) {
-                    auto* vm = VirtualMachine::GetSingleton();
-                    auto* handlePolicy = vm->GetObjectHandlePolicy();
-                    RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
-                    RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
-                    vm->CreateObject(typeName, objectPtr);
-                    auto* bindPolicy = vm->GetObjectBindPolicy();
-                    bindPolicy->BindObject(objectPtr, handle);
-                    propertyVariable->SetObject(objectPtr);
-                } else {
-                    // TODO - support all other property types! the primitives!
-                }
+            Log("Getting type info about property '{}'", propertyName.c_str());
+            auto* propertyTypeInfo = properties[i].info.type.GetTypeInfo();
+            auto type = propertyTypeInfo->GetRawType();
+            if (type == TypeInfo::RawType::kObject) {
+                Log("Property {} is OBJECT", propertyName.c_str());
+                Log("The property object is of type {}", propertyTypeInfo->name.c_str());
+            } else if (type == TypeInfo::RawType::kString) {
+                Log("Property {} is String", propertyName.c_str());
+            } else if (type == TypeInfo::RawType::kInt) {
+                Log("Property {} is Int", propertyName.c_str());
+            } else {
+                auto typeId = (size_t) type;
+                Log("Dunno prop type {}? Let's see here...", typeId);
+                Log("Dunno prop type NAME {}? Let's see here...", propertyName.c_str());
+                Log("The property object is of type {}", propertyTypeInfo->name.c_str());
             }
+
+//            if (properties[i].info.getFunction) {
+//                Log("THERE IS A GETTER FUNCTION");
+//            } else {
+//                Log("there is NO getter function");
+//            }
+
+            // propertyTypeInfo->GetRawType()
+//             TypeInfo::RawType::
+
+
+//            Log("here we go...");
+//            auto typeName = propertyTypeInfo->name;
+//            Log("The type name is: '{}'", typeName.c_str());
+
+//            auto* propertyVariable = object->GetProperty(propertyName);
+//            if (propertyVariable->IsObject()) {
+//                auto* form = RE::TESForm::LookupByEditorID(propertyName);
+//                if (form) {
+//                    auto* vm = VirtualMachine::GetSingleton();
+//                    auto* handlePolicy = vm->GetObjectHandlePolicy();
+//                    RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
+//                    RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+//                    vm->CreateObject(typeName, objectPtr);
+//                    auto* bindPolicy = vm->GetObjectBindPolicy();
+//                    bindPolicy->BindObject(objectPtr, handle);
+//                    propertyVariable->SetObject(objectPtr);
+//                } else {
+//                    // TODO - support all other property types! the primitives!
+//                }
+//            }
         }
     }
 

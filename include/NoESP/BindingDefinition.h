@@ -7,7 +7,6 @@ namespace NoESP {
 
     enum BindingDefinitionType { EditorID, FormID, Invalid };
     enum EditorIdMatcherType { Exact, PrefixMatch, SuffixMatch, PrefixAndSuffixMatch, RegularExpression };
-    enum PropertyType { IntProperty, FloatProperty, BoolProperty, StringProperty, ScriptProperty, PropertyTypeNotLoaded, PropertyTypeLookupFailed };
 
     struct EditorIdMatcher {
         EditorIdMatcherType Type;
@@ -18,7 +17,9 @@ namespace NoESP {
     struct PropertyValue {
         std::string PropertyName;
         std::string PropertyValueText;
-        PropertyType PropertyType = PropertyType::PropertyTypeNotLoaded;
+        bool PropertyTypeHasBeenLoaded = false;
+        RE::BSScript::TypeInfo::RawType PropertyType;
+        std::string PropertyTypeScriptName;
     };
 
     typedef std::unordered_map<std::string, PropertyValue> FormPropertyMap;
