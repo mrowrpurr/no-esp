@@ -56,9 +56,30 @@ go_bandit([](){
             AssertThat(std::regex_match("cool sWeeT the rOLl haha", def.EditorIdMatcher.RegularExpression), IsTrue());
             AssertThat(std::regex_match("cool not the roll haha", def.EditorIdMatcher.RegularExpression), IsFalse());
         });
-        xit("ScriptName 0x123", [&](){ });
-        xit("ScriptName 0x123 SomePlugin.esp", [&](){ });
-        xit("!ScriptName (don't auto fill)", [&](){ });
+        it("ScriptName 0x123", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine("PlayerScript 0x14");
+
+            AssertThat(def.ScriptName, Equals("PlayerScript"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // 0x14
+            AssertThat(def.Plugin, IsEmpty());
+        });
+        it("ScriptName 0x123 SomePlugin.esp", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine("PlayerScript 0x14 SomePlugin.esp");
+
+            AssertThat(def.ScriptName, Equals("PlayerScript"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // 0x14
+            AssertThat(def.Plugin, Equals("SomePlugin.esp"));
+        });
+        xit("!ScriptName (don't auto fill)", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine("!MyScript");
+
+            AssertThat(def.ScriptName, Equals("MyScript"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // The player
+//            AssertThat() ...
+        });
         xit("ScriptName Prop=TextValue", [&](){ });
         xit("ScriptName Prop=\"Quoted text value\"", [&](){ });
         xit("ScriptName *Editor* A=1 B=\"hi there\" C=true", [&](){ });
