@@ -68,11 +68,11 @@ namespace NoESP::AutoBindingsFile {
                 matcher.Type = EditorIdMatcherType::PrefixAndSuffixMatch;
                 matcher.Text = editorId.substr(1, editorId.length() - 2);
             } else if (editorId.starts_with('*')) {
-                matcher.Type = EditorIdMatcherType::PrefixMatch;
+                matcher.Type = EditorIdMatcherType::SuffixMatch;
                 matcher.Text = editorId.substr(1);
             } else if (editorId.ends_with('*')) {
-                matcher.Type = EditorIdMatcherType::SuffixMatch;
-                matcher.Text = editorId.substr(0, editorId.length() - 2);
+                matcher.Type = EditorIdMatcherType::PrefixMatch;
+                matcher.Text = editorId.substr(0, editorId.length() - 1);
             } else if (editorId.starts_with('/') && editorId.ends_with('/') && editorId.length() > 2) {
                 matcher.Type = EditorIdMatcherType::RegularExpression;
                 matcher.RegularExpression = editorId.substr(1, editorId.length() - 2);

@@ -9,7 +9,7 @@ using namespace snowhouse;
 
 namespace NoESP {
     template <class... Types>
-    void Log(const std::string text, const Types&... args) {
+    void Log(const std::string, const Types&...) {
         // Stub function
     };
 }
