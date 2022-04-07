@@ -92,7 +92,31 @@ go_bandit([](){
             AssertThat(def.PropertyValues["prop"].PropertyValueText, Equals("TextValue"));
             AssertThat(def.PropertyValues["prop"].PropertyTypeHasBeenLoaded, IsFalse());
         });
-        xit("ScriptName Prop=\"Quoted text value\"", [&](){ });
-        xit("ScriptName *Editor* A=1 B=\"hi there\" C=true", [&](){ });
+        it("ScriptName Prop=\"Quoted text value\"", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine(R"(MyScript Prop="Quoted text value")");
+
+            AssertThat(def.ScriptName, Equals("MyScript"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // The player
+            AssertThat(def.PropertyValues.size(), Equals(1));
+            AssertThat(def.PropertyValues.contains("prop"), IsTrue());
+            AssertThat(def.PropertyValues["prop"].PropertyName, Equals("prop"));
+            AssertThat(def.PropertyValues["prop"].PropertyValueText, Equals("Quoted text value"));
+            AssertThat(def.PropertyValues["prop"].PropertyTypeHasBeenLoaded, IsFalse());
+        });
+        it("ScriptName *Editor* A=1 B=\"hi there\" C=true z=\"cool with an = sign too\"", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine(R"(MyScript A=1 B="Hi There" C=true D=69 multiline="\nthis\t has special\n characters\n" z=" cool with an = sign too ")");
+
+            AssertThat(def.ScriptName, Equals("MyScript"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // The player
+            AssertThat(def.PropertyValues.size(), Equals(6));
+            AssertThat(def.PropertyValues["a"].PropertyValueText, Equals("1"));
+            AssertThat(def.PropertyValues["b"].PropertyValueText, Equals("Hi There"));
+            AssertThat(def.PropertyValues["c"].PropertyValueText, Equals("true"));
+            AssertThat(def.PropertyValues["d"].PropertyValueText, Equals("69"));
+            AssertThat(def.PropertyValues["z"].PropertyValueText, Equals(" cool with an = sign too "));
+            AssertThat(def.PropertyValues["multiline"].PropertyValueText, Equals("\nthis\t has special\n characters\n"));
+        });
     });
 });
