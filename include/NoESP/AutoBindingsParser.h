@@ -83,8 +83,35 @@ namespace NoESP::AutoBindingsFile {
             return matcher;
         }
 
-        BindingDefinition ParseLine(const std::string& line) {
+        // Recurse me!
+        void ParsePropertiesFromLine(FormPropertyMap& properties, std::string& line) {
+            // from the right side of the line, look for: A="B C" or D=1 or E=true etc
+            static auto rightHandSideQuotedPropertyAssignment = std::regex(R"(\s+([^=]+)=([^=]+)$)", std::regex_constants::icase);
+            try {
+                std::smatch matches;
+                if (std::regex_search(line, matches, rightHandSideQuotedPropertyAssignment)) {
+                    PropertyValue property;
+                    property.PropertyName = Utilities::ToLowerCase(matches[1].str());
+                    property.PropertyValueText = matches[2].str();
+                    properties.insert_or_assign(property.PropertyName, property);
+                    Log("Found and added property '{}' with value '{}'", property.PropertyName, property.PropertyValueText);
+
+                    line = line.substr(0, matches.position());
+                    ParsePropertiesFromLine(properties, line);
+                } else {
+                    Log("No properties in line '{}'", line);
+                }
+            } catch (...) {
+                Log("Error parsing properties from line '{}'", line);
+            }
+        }
+
+        BindingDefinition ParseLine(std::string line) {
+            FormPropertyMap properties;
+            ParsePropertiesFromLine(properties, line);
+
             BindingDefinition entry;
+            entry.PropertyValues = properties;
             static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)", std::regex_constants::icase);
             static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)", std::regex_constants::icase);
             static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*$)", std::regex_constants::icase);

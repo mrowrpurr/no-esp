@@ -80,7 +80,18 @@ go_bandit([](){
             AssertThat(def.FormID, Equals(20)); // The player
 //            AssertThat() ...
         });
-        xit("ScriptName Prop=TextValue", [&](){ });
+        it("ScriptName Prop=TextValue", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine("MyScript Prop=TextValue");
+
+            AssertThat(def.ScriptName, Equals("MyScript"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // The player
+            AssertThat(def.PropertyValues.size(), Equals(1));
+            AssertThat(def.PropertyValues.contains("prop"), IsTrue());
+            AssertThat(def.PropertyValues["prop"].PropertyName, Equals("prop"));
+            AssertThat(def.PropertyValues["prop"].PropertyValueText, Equals("TextValue"));
+            AssertThat(def.PropertyValues["prop"].PropertyTypeHasBeenLoaded, IsFalse());
+        });
         xit("ScriptName Prop=\"Quoted text value\"", [&](){ });
         xit("ScriptName *Editor* A=1 B=\"hi there\" C=true", [&](){ });
     });
