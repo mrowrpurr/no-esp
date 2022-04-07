@@ -51,7 +51,10 @@ go_bandit([](){
             AssertThat(def.ScriptName, Equals("MyScript"));
             AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::EditorID));
             AssertThat(def.EditorIdMatcher.Type, Equals(NoESP::EditorIdMatcherType::RegularExpression));
-            // AssertThat(def.EditorIdMatcher.RegularExpression, Equals(std::regex(".*SwXXXeet.*Roll.*")));
+
+            AssertThat(std::regex_match("cool sweet the roll haha", def.EditorIdMatcher.RegularExpression), IsTrue());
+            AssertThat(std::regex_match("cool sWeeT the rOLl haha", def.EditorIdMatcher.RegularExpression), IsTrue());
+            AssertThat(std::regex_match("cool not the roll haha", def.EditorIdMatcher.RegularExpression), IsFalse());
         });
         xit("ScriptName 0x123", [&](){ });
         xit("ScriptName 0x123 SomePlugin.esp", [&](){ });

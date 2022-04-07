@@ -75,7 +75,7 @@ namespace NoESP::AutoBindingsFile {
                 matcher.Text = editorId.substr(0, editorId.length() - 1);
             } else if (editorId.starts_with('/') && editorId.ends_with('/') && editorId.length() > 2) {
                 matcher.Type = EditorIdMatcherType::RegularExpression;
-                matcher.RegularExpression = editorId.substr(1, editorId.length() - 2);
+                matcher.RegularExpression = std::regex(editorId.substr(1, editorId.length() - 2), std::regex_constants::icase);
             } else {
                 matcher.Type = EditorIdMatcherType::Exact;
                 matcher.Text = editorId;
@@ -85,10 +85,10 @@ namespace NoESP::AutoBindingsFile {
 
         BindingDefinition ParseLine(const std::string& line) {
             BindingDefinition entry;
-            static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)");
-            static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)");
-            static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*$)");
-            static auto scriptNameOnly = std::regex(R"(^\s*([^\s]+)\s*$)");
+            static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)", std::regex_constants::icase);
+            static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)", std::regex_constants::icase);
+            static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*$)", std::regex_constants::icase);
+            static auto scriptNameOnly = std::regex(R"(^\s*([^\s]+)\s*$)", std::regex_constants::icase);
             std::smatch matches;
             try {
                 if (std::regex_search(line, matches, scriptNameWithPluginFormID)) {
