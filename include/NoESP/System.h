@@ -14,7 +14,7 @@
 #include <REL/Relocation.h>
 
 #include "Log.h"
-#include "AutoBindingsFile.h"
+#include "AutoBindingsParser.h"
 #include "Events/OnActorLocationChangeEventSink.h"
 #include "Events/OnMenuOpenCloseEventSink.h"
 #include "PapyrusScriptBindings.h"
@@ -392,6 +392,11 @@ namespace NoESP {
         static void SetupFormBindings(RE::TESForm* form, const std::string& scriptName, FormPropertyMap& propertiesToSet) {
             Log("Setup form bindings for '{}' 0x{:x} for script '{}'", form->GetName(), form->formID, scriptName);
             auto& system = System::GetSingleton();
+
+            // TODO Only do this if the script exists!
+            // TODO And when we check if the script exists, maybe it could give back stored type info *'s ...
+            // TODO And even the index of each needed property, assuming that's stable.
+
             if (form) {
                 system.AddFormIdForScript(form->formID, scriptName, propertiesToSet); // TODO - attach the property map
                 if (! form->AsReference()) {
@@ -411,26 +416,18 @@ namespace NoESP {
             std::vector<std::tuple<EditorIdMatcher, std::string, FormPropertyMap>> editorIdMatchers;
 
             AutoBindingsFile::Read([&system, &editorIdMatchers](BindingDefinition& entry){
-                Log("A");
-                Log("AutoBinding {} {} 0x{:x} {} w/ {} properties", entry.ScriptName, entry.EditorIdMatcher.Text, entry.FormID, entry.Plugin, entry.PropertyValues.size());
-                Log("AA");
                 RE::TESForm* form = nullptr;
                 if (entry.Type == BindingDefinitionType::FormID && entry.Plugin.empty()) {
-                    Log("B");
                     form = RE::TESForm::LookupByID(entry.FormID);
                     if (! form) Log("({}:{}) Form not found: '{:x}'", entry.Filename, entry.ScriptName, entry.FormID);
                 } else if (entry.Type == BindingDefinitionType::FormID && ! entry.Plugin.empty()) {
-                    Log("C");
                     form = RE::TESDataHandler::GetSingleton()->LookupForm(entry.FormID, entry.Plugin);
                     if (!form) Log("({}:{}) Form not found from plugin '{}': '{:x}'", entry.Filename, entry.ScriptName, entry.Plugin, entry.FormID);
                 } else if (entry.Type == BindingDefinitionType::EditorID) {
-                    Log("D");
                     if (entry.EditorIdMatcher.Type == EditorIdMatcherType::Exact) {
-                        Log("E");
                         form = RE::TESForm::LookupByEditorID(entry.EditorIdMatcher.Text);
                         if (! form) Log("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorIdMatcher.Text);
                     } else {
-                        Log("F");
                         std::tuple<EditorIdMatcher, std::string, FormPropertyMap> values{entry.EditorIdMatcher, entry.ScriptName, entry.PropertyValues};
                         editorIdMatchers.emplace_back(values);
                     }

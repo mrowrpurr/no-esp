@@ -6,6 +6,7 @@
 #include <regex>
 #include <string>
 #include <sstream>
+#include <fstream>
 
 #include "BindingDefinition.h"
 #include "Utilities.h"

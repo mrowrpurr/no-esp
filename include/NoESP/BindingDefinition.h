@@ -6,10 +6,16 @@
 namespace NoESP {
 
     enum BindingDefinitionType { EditorID, FormID, Invalid };
-    enum EditorIdMatcherType { Exact, PrefixMatch, SuffixMatch, PrefixAndSuffixMatch, RegularExpression };
+    enum EditorIdMatcherType { Exact, PrefixMatch, SuffixMatch, PrefixAndSuffixMatch, RegularExpression, None };
+
+    enum CommonLibRawType {
+        kNone = 0, kObject = 1, kString = 2, kInt = 3, kFloat = 4, kBool = 5,
+        kNoneArray = 10, kObjectArray = 11, kStringArray = 12, kIntArray = 13, kFloatArray = 14, kBoolArray = 15,
+        kArraysEnd
+    };
 
     struct EditorIdMatcher {
-        EditorIdMatcherType Type;
+        EditorIdMatcherType Type = EditorIdMatcherType::None;
         std::string Text;
         std::regex RegularExpression;
     };
@@ -18,7 +24,7 @@ namespace NoESP {
         std::string PropertyName;
         std::string PropertyValueText;
         bool PropertyTypeHasBeenLoaded = false;
-        RE::BSScript::TypeInfo::RawType PropertyType;
+        CommonLibRawType PropertyType;
         std::string PropertyTypeScriptName;
     };
 

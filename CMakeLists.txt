@@ -25,6 +25,7 @@ option(SKYRIM_SE "Compile plugin for Skyrim SE" OFF)
 option(SKYRIM_VR "Compile plugin for Skyrim VR" OFF)
 
 include(Skyrim)
+include(CompilerOptions)
 
 # Include spdlog for logging
 find_package(spdlog CONFIG REQUIRED)
@@ -33,3 +34,5 @@ target_link_libraries(no-esp PUBLIC spdlog::spdlog)
 # Include inih for .ini files
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 target_include_directories(no-esp PUBLIC ${SIMPLEINI_INCLUDE_DIRS})
+
+add_subdirectory(test)

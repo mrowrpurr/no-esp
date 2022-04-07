@@ -1,3 +1,10 @@
+# Tonight!
+
+- [x] Make test suite run plz k thx
+- [ ] Parse the examples added, plz k thx, like make them go!
+- [ ] Hook it up to Skyrim
+- [ ] Raid :)
+
 # 1.0.0
 
 - [x] Bind to references by 0x0 reference form ID (once per script)
