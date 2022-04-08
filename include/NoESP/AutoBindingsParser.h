@@ -31,36 +31,6 @@ namespace NoESP::AutoBindingsFile {
             return result;
         }
 
-        std::unordered_map<std::string, PropertyValue> ParsePropertiesForBinding(const std::string& propertiesTextDefinition) {
-            static auto nextPropertyPatternQuoted = std::regex(R"(\s*([^=\s]+)=\"([^\"]+)\".*)");
-            static auto nextPropertyPattern = std::regex(R"(\s*([^=\s]+)=([^\s]+).*)");
-            std::unordered_map<std::string, PropertyValue> properties;
-            std::string text = propertiesTextDefinition;
-            std::smatch matches;
-            while (true) {
-                if (std::regex_search(text, matches, nextPropertyPatternQuoted)) {
-                    auto propertyName = matches[1].str();
-                    auto propertyValue = matches[2].str();
-                    PropertyValue property;
-                    property.PropertyName = Utilities::ToLowerCase(propertyName);
-                    property.PropertyValueText = propertyValue;
-                    properties.insert_or_assign(propertyName, property);
-                    text = std::format("{}{}", text.substr(0, matches.position()), text.substr(matches.position() + matches[1].length() + 2 + matches[2].length() + 2)); // 2 for '='? and 2 for '""'
-                } else if (std::regex_search(text, matches, nextPropertyPattern) || std::regex_search(text, matches, nextPropertyPattern)) {
-                    auto propertyName = matches[1].str();
-                    auto propertyValue = matches[2].str();
-                    PropertyValue property;
-                    property.PropertyName = Utilities::ToLowerCase(propertyName);
-                    property.PropertyValueText = propertyValue;
-                    properties.insert_or_assign(propertyName, property);
-                    text = std::format("{}{}", text.substr(0, matches.position()), text.substr(matches.position() + matches[1].length() + 2 + matches[2].length())); // 2 for '='?
-                } else {
-                    break;
-                }
-            }
-            return properties;
-        }
-
         EditorIdMatcher ParseEditorIdMatchText(const std::string& editorIdText) {
             EditorIdMatcher matcher;
             auto editorId = Utilities::ToLowerCase(editorIdText);
@@ -121,8 +91,12 @@ namespace NoESP::AutoBindingsFile {
         }
 
         BindingDefinition ParseLine(std::string line) {
+            Log("ParseLine '{}'", line);
+
             FormPropertyMap properties;
-            ParsePropertiesFromLine(properties, line);
+//            ParsePropertiesFromLine(properties, line);
+
+            Log("Line after Property Parse '{}'", line);
 
             BindingDefinition entry;
             entry.PropertyValues = properties;
@@ -161,11 +135,6 @@ namespace NoESP::AutoBindingsFile {
             } catch (...) {
                 Log("Error parsing line: '{}'", line);
             }
-//            auto propertyDefinitionStartIndex = line.find('|');
-//            if (propertyDefinitionStartIndex != std::string::npos && propertyDefinitionStartIndex != line.length() - 1) {
-//                auto propertyDefinitionText = line.substr(propertyDefinitionStartIndex + 1); // Everything after the '|'
-//                entry.PropertyValues = ParsePropertiesForBinding(propertyDefinitionText);
-//            }
             return entry;
         }
     }
