@@ -18,6 +18,7 @@
 #include "Events/OnActorLocationChangeEventSink.h"
 #include "Events/OnMenuOpenCloseEventSink.h"
 #include "PapyrusScriptBindings.h"
+#include "ScriptPropertyTypeCache.h"
 #include "Utilities.h"
 #include "Config.h"
 
@@ -34,8 +35,9 @@ using namespace RE::BSScript::Internal;
 
 namespace NoESP {
 
-    // From Base Object Swapper - play around, understand it, rewrite it in my style.
-    // https://github.com/powerof3/BaseObjectSwapper/blob/f636b8cc7079ddebd63eb761e99af95b29884ccc/src/PCH.h#L17-L27
+    // Move this into its own file :)
+    // From Base Object Swapper:
+    // https://github.com/powerof3/BaseObjectSwapper/blob/f636b8cc7079ddebd63eb761e99af95b29884ccc/src/PCH.h#L17-L27
     template <class F, class T>
     void vfunc() {
         REL::Relocation<std::uintptr_t> vtable{ F::VTABLE[0] };

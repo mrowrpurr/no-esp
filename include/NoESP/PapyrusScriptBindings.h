@@ -8,6 +8,7 @@
 #pragma warning(pop)
 
 #include "BindingDefinition.h"
+#include "ScriptPropertyTypeCache.h"
 
 using namespace NoESP;
 using namespace RE::BSScript;
@@ -68,19 +69,32 @@ namespace NoESP::PapyrusScriptBindings {
         }
     }
 
-    void SetProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& propertyMap) {
+    void SetProperties(const std::string& scriptName, const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& propertyMap) {
+        auto& propertyTypeCache = ScriptPropertyTypeCache::GetSingleton();
         for (const auto& [propertyName, propertyValue] : propertyMap) {
             try {
-                auto* property = object->GetProperty(propertyName);
-                if (property) {
-                    if (property->IsString()) {
-                        Log("{} is a string!", propertyName.c_str());
-                        property->SetString(propertyValue.PropertyValueText);
+                auto propertyType = propertyTypeCache.GetOrLookupScriptPropertyType(scriptName, propertyName);
+                if (propertyType.has_value()) {
+                    auto* property = object->GetProperty(propertyName);
+                    if (property) {
+                        switch (propertyType.value()) {
+                            case TypeInfo::RawType::kString:
+                                Log("Woohoo {} is a string!", propertyName.c_str());
+                                property->SetString(propertyValue.PropertyValueText);
+                                break;
+                            case TypeInfo::RawType::kInt:
+                                Log("Woohoo {} is a int!", propertyName.c_str());
+                                property->SetSInt(std::stoi(propertyValue.PropertyValueText));
+                                break;
+                            default:
+                                Log("Unsupported property type for {}", propertyName);
+                                break;
+                        }
                     } else {
-                        Log("Unsupported property type for {}", propertyName.c_str());
+                        Log("Property not found {}", propertyName.c_str());
                     }
                 } else {
-                    Log("Property not found {}", propertyName.c_str());
+                    Log("Cache did not find script property {} {}", scriptName, propertyName);
                 }
             } catch (...) {
                 Log("Error setting property {}", propertyName.c_str());
@@ -120,7 +134,7 @@ namespace NoESP::PapyrusScriptBindings {
                 auto* bindPolicy = vm->GetObjectBindPolicy();
 
                 if (autoFillProperties) AutoFillProperties(objectPtr, propertiesToSet);
-                SetProperties(objectPtr, propertiesToSet);
+                SetProperties(scriptName, objectPtr, propertiesToSet);
 
                 try {
                     bindPolicy->BindObject(objectPtr, handle);
@@ -178,7 +192,7 @@ namespace NoESP::PapyrusScriptBindings {
                 auto* bindPolicy = vm->GetObjectBindPolicy();
 
                 if (autoFillProperties) AutoFillProperties(objectPtr, propertiesToSet);
-                SetProperties(objectPtr, propertiesToSet);
+                SetProperties(scriptName, objectPtr, propertiesToSet);
 
                 try {
                     bindPolicy->BindObject(objectPtr, handle);
