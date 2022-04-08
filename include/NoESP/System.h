@@ -19,6 +19,7 @@
 #include "Events/OnMenuOpenCloseEventSink.h"
 #include "PapyrusScriptBindings.h"
 #include "Utilities.h"
+#include "Config.h"
 
 using namespace std::chrono_literals;
 
@@ -109,6 +110,7 @@ namespace NoESP {
         }
 
         void AddFormIdForScript(RE::FormID formId, const std::string& scriptName, FormPropertyMap& propertiesToSet) {
+            Log("AddFormIdForScript() '{}' 0x{:x}", scriptName, formId);
             if (_formIdsToScriptNames.contains(formId)) {
                 auto& map = _formIdsToScriptNames[formId];
                 if (map.contains(scriptName)) {
@@ -124,6 +126,7 @@ namespace NoESP {
             }
         }
         void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName, FormPropertyMap& propertiesToSet) {
+            Log("AddBaseFormIdForScript() '{}' 0x{:x}", scriptName, formId);
             if (_baseFormIdsToScriptNames.contains(formId)) {
                 auto& map = _baseFormIdsToScriptNames[formId];
                 if (map.contains(scriptName)) {
@@ -171,7 +174,7 @@ namespace NoESP {
             }
         }
 
-        std::unordered_map<RE::FormID, std::unordered_map<std::string, FormPropertyMap>>& GetScriptsForBaseForms() { return _baseFormIdsToScriptNames; }
+        std::unordered_map<RE::FormID, std::unordered_map<std::string, FormPropertyMap>>& GetScriptsForDirectlyReferencedForms() { return _formIdsToScriptNames; }
         std::unordered_map<std::string, FormPropertyMap>& ScriptsForBaseForm(RE::FormID baseFormId) { return _baseFormIdsToScriptNames[baseFormId]; }
         std::unordered_map<std::string, FormPropertyMap>& GetScriptNamesForKeyword(RE::BGSKeyword* keyword) { return _keywordIdsToScriptNames[keyword]; }
         std::unordered_map<RE::BGSKeyword*, std::unordered_map<std::string, FormPropertyMap>>& GetScriptNamesForKeywords() { return _keywordIdsToScriptNames; }
@@ -179,10 +182,12 @@ namespace NoESP {
         std::unordered_map<RE::BGSListForm*, std::unordered_map<std::string, FormPropertyMap>>& GetScriptNamesForFormLists() { return _formListIdsToScriptNames; }
 
         void BindFormIdsToScripts() {
-            auto& bindingsForForms = GetScriptsForBaseForms();
+            auto& bindingsForForms = GetScriptsForDirectlyReferencedForms();
             Log("Binding Form IDs to Scripts for {} forms", bindingsForForms.size());
             for (auto& [formId, scriptNamesAndPropertyMaps] : bindingsForForms) {
+                Log("Form ID in 'bindingsForForms' {:x}", formId);
                 for (auto& [scriptName, propertyMap] : scriptNamesAndPropertyMaps) {
+                    Log("Script name... '{}'", scriptName);
                     if (TryLinkScript(scriptName)) {
                         PapyrusScriptBindings::BindToFormId(scriptName, formId, propertyMap);
                     } else {
@@ -398,8 +403,10 @@ namespace NoESP {
             // TODO And even the index of each needed property, assuming that's stable.
 
             if (form) {
-                system.AddFormIdForScript(form->formID, scriptName, propertiesToSet); // TODO - attach the property map
+                Log("Hey, form. Setup stuff... {:x}", form->formID);
+                system.AddFormIdForScript(form->formID, scriptName, propertiesToSet);
                 if (! form->AsReference()) {
+                    Log("Oh, snap. Did you know that {:x} is not a reference?", form->formID);
                     if (form->GetFormType() == RE::FormType::Keyword) {
                         system.AddKeywordIdForScript(form->As<RE::BGSKeyword>(), scriptName, propertiesToSet);
                     } else if (form->GetFormType() == RE::FormType::FormList) {
