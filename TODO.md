@@ -1,7 +1,7 @@
 # Tonight!
 
 - [x] Make test suite run plz k thx
-- [ ] Parse the examples added, plz k thx, like make them go!
+- [x] Parse the examples added, plz k thx, like make them go!
 - [ ] Hook it up to Skyrim
 - [ ] Raid :)
 
