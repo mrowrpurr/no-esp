@@ -94,7 +94,7 @@ namespace NoESP::AutoBindingsFile {
             Log("ParseLine '{}'", line);
 
             FormPropertyMap properties;
-//            ParsePropertiesFromLine(properties, line);
+            ParsePropertiesFromLine(properties, line);
 
             Log("Line after Property Parse '{}'", line);
 

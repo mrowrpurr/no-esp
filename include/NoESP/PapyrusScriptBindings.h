@@ -15,13 +15,19 @@ using namespace RE::BSScript::Internal;
 
 namespace NoESP::PapyrusScriptBindings {
 
-    void AutoFillProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object) {
+    void AutoFillProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& manuallyConfiguredProperties) {
 //        if (true) return; // Come back to this...
 
         auto* typeInfo = object->GetTypeInfo();
         auto* properties = typeInfo->GetPropertyIter();
         for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
             auto propertyName = properties[i].name;
+
+            if (manuallyConfiguredProperties.contains(Utilities::ToLowerCase(propertyName.c_str()))) {
+                Log("Not using autofill for property {} because it is manually configured", propertyName.c_str());
+                continue;
+            }
+
             Log("Getting type info about property '{}'", propertyName.c_str());
             auto* propertyTypeInfo = properties[i].info.type.GetTypeInfo();
             auto type = propertyTypeInfo->GetRawType();
@@ -39,61 +45,51 @@ namespace NoESP::PapyrusScriptBindings {
                 Log("The property object is of type {}", propertyTypeInfo->name.c_str());
             }
 
-//            if (properties[i].info.getFunction) {
-//                Log("THERE IS A GETTER FUNCTION");
-//            } else {
-//                Log("there is NO getter function");
-//            }
+            auto typeName = propertyTypeInfo->name.c_str();
 
-            // propertyTypeInfo->GetRawType()
-//             TypeInfo::RawType::
-
-
-//            Log("here we go...");
-//            auto typeName = propertyTypeInfo->name;
-//            Log("The type name is: '{}'", typeName.c_str());
-
-//            auto* propertyVariable = object->GetProperty(propertyName);
-//            if (propertyVariable->IsObject()) {
-//                auto* form = RE::TESForm::LookupByEditorID(propertyName);
-//                if (form) {
-//                    auto* vm = VirtualMachine::GetSingleton();
-//                    auto* handlePolicy = vm->GetObjectHandlePolicy();
-//                    RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
-//                    RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
-//                    vm->CreateObject(typeName, objectPtr);
-//                    auto* bindPolicy = vm->GetObjectBindPolicy();
-//                    bindPolicy->BindObject(objectPtr, handle);
-//                    propertyVariable->SetObject(objectPtr);
-//                } else {
-//                    // TODO - support all other property types! the primitives!
-//                }
-//            }
-        }
-    }
-
-    void SetProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& propertyMap) {
-        auto* typeInfo = object->GetTypeInfo();
-        auto* properties = typeInfo->GetPropertyIter();
-        for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
-            auto typeName = properties[i].info.type.GetTypeInfo()->GetName();
-            auto propertyName = properties[i].name;
             auto* propertyVariable = object->GetProperty(propertyName);
-            if (propertyMap.contains(Utilities::ToLowerCase(propertyName.c_str()))) {
-
-                // TODO make sure we do lowercase all the things!
-
-                // TODO - caching!
-                if (propertyVariable->IsString()) {
-                    Log("OMG A STRING! '{}' => '{}'", propertyName.c_str(), propertyMap[std::string(propertyName.c_str())].PropertyValueText);
+            if (propertyVariable->IsObject()) {
+                auto* form = RE::TESForm::LookupByEditorID(propertyName);
+                if (form) {
+                    auto* vm = VirtualMachine::GetSingleton();
+                    auto* handlePolicy = vm->GetObjectHandlePolicy();
+                    RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
+                    RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+                    Log("Creating a {} for property {}", typeName, propertyName.c_str());
+                    vm->CreateObject(typeName, objectPtr);
+                    auto* bindPolicy = vm->GetObjectBindPolicy();
+                    bindPolicy->BindObject(objectPtr, handle);
+                    propertyVariable->SetObject(objectPtr);
                 } else {
-                    Log("Unsupported property type for '{}'", propertyName.c_str());
+                    // TODO - support all other property types! the primitives!
+                    Log("Autofill only supports object properties, no primitives (int, string, etc) right now...");
                 }
             }
         }
     }
 
+    void SetProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& propertyMap) {
+        for (const auto& [propertyName, propertyValue] : propertyMap) {
+            try {
+                auto* property = object->GetProperty(propertyName);
+                if (property) {
+                    if (property->IsString()) {
+                        Log("{} is a string!", propertyName.c_str());
+                        property->SetString(propertyValue.PropertyValueText);
+                    } else {
+                        Log("Unsupported property type for {}", propertyName.c_str());
+                    }
+                } else {
+                    Log("Property not found {}", propertyName.c_str());
+                }
+            } catch (...) {
+                Log("Error setting property {}", propertyName.c_str());
+            }
+        }
+    }
+
     void BindToForm(std::string scriptName, const RE::TESForm& form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
+        // Gross! Move this to a BindingDefinition field! Such hack.
         bool autoFillProperties = true;
         if (scriptName.starts_with('!')) {
             autoFillProperties = false;
@@ -112,6 +108,7 @@ namespace NoESP::PapyrusScriptBindings {
                     if (vm->attachedScripts.contains(handle)) {
                         for (auto& attachedScript : vm->attachedScripts.find(handle)->second) {
                             if (attachedScript->GetTypeInfo()->GetName() == caseInsensitiveScriptName) {
+                                Log("{} already attached to 0x{:x}, skipping", scriptName, form.formID);
                                 return; // Don't bind! Already bound!
                             }
                         }
@@ -121,12 +118,10 @@ namespace NoESP::PapyrusScriptBindings {
                 RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
                 vm->CreateObject(scriptName, objectPtr);
                 auto* bindPolicy = vm->GetObjectBindPolicy();
-                if (autoFillProperties) {
-                    AutoFillProperties(objectPtr);
-                }
-//                if (def) {
-//                    SetProperties(objectPtr, def->PropertyValues);
-//                }
+
+                if (autoFillProperties) AutoFillProperties(objectPtr, propertiesToSet);
+                SetProperties(objectPtr, propertiesToSet);
+
                 try {
                     bindPolicy->BindObject(objectPtr, handle);
                 } catch (...) {
@@ -152,6 +147,7 @@ namespace NoESP::PapyrusScriptBindings {
     void BindToFormPointer(std::string scriptName, RE::TESForm* form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
         if (! form) return;
 
+        // Gross! Move this to a BindingDefinition field! Such hack.
         bool autoFillProperties = true;
         if (scriptName.starts_with('!')) {
             autoFillProperties = false;
@@ -170,6 +166,7 @@ namespace NoESP::PapyrusScriptBindings {
                     if (vm->attachedScripts.contains(handle)) {
                         for (auto& attachedScript : vm->attachedScripts.find(handle)->second) {
                             if (attachedScript->GetTypeInfo()->GetName() == caseInsensitiveScriptName) {
+                                Log("{} already attached to 0x{:x}, skipping", scriptName, form->formID);
                                 return; // Don't bind! Already bound!
                             }
                         }
@@ -179,10 +176,16 @@ namespace NoESP::PapyrusScriptBindings {
                 RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
                 vm->CreateObject(scriptName, objectPtr);
                 auto* bindPolicy = vm->GetObjectBindPolicy();
-                if (autoFillProperties) {
-                    AutoFillProperties(objectPtr);
+
+                if (autoFillProperties) AutoFillProperties(objectPtr, propertiesToSet);
+                SetProperties(objectPtr, propertiesToSet);
+
+                try {
+                    bindPolicy->BindObject(objectPtr, handle);
+                } catch (...) {
+                    Log("Failed to bind object to handle for '{}'", scriptName);
+                    return;
                 }
-                bindPolicy->BindObject(objectPtr, handle);
 
                 auto* ref = form->AsReference();
                 if (ref) {
