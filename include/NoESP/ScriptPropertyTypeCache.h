@@ -5,9 +5,15 @@ using namespace RE::BSScript::Internal;
 
 namespace NoESP {
 
+    struct ScriptPropertyType {
+        std::optional<TypeInfo::RawType> RawType = TypeInfo::RawType::kNone;
+        std::string PropertyScriptName;
+    };
+
     class ScriptPropertyTypeCache {
+
         // Cache types of properties which we need to manually set on scripts
-        std::unordered_map<std::string, std::unordered_map<std::string, RE::BSScript::TypeInfo::RawType>> _scriptPropertyTypes;
+        std::unordered_map<std::string, std::unordered_map<std::string, ScriptPropertyType>> _scriptPropertyTypes;
 
         ScriptPropertyTypeCache() = default;
 
@@ -20,11 +26,13 @@ namespace NoESP {
             return cache;
         }
 
-        std::optional<RE::BSScript::TypeInfo::RawType> GetOrLookupScriptPropertyType(const std::string& scriptName, const std::string& propertyName) {
+        std::optional<ScriptPropertyType> GetOrLookupScriptPropertyType(const std::string& scriptName, const std::string& propertyName) {
             auto lowerScriptName = Utilities::ToLowerCase(scriptName);
+            Log("Get or Lookup... script:{} property:{}", scriptName, propertyName);
 
             if (! _scriptPropertyTypes.contains(lowerScriptName)) {
-                std::unordered_map<std::string, RE::BSScript::TypeInfo::RawType> propertyTypes;
+                std::unordered_map<std::string, ScriptPropertyType> propertyTypes;
+                Log("Caching all properties for script {}", scriptName);
                 try {
                     auto* vm = VirtualMachine::GetSingleton();
                     RE::BSTSmartPointer<RE::BSScript::ObjectTypeInfo> objectTypeInfoPtr;
@@ -33,11 +41,34 @@ namespace NoESP {
                     if (properties) {
                         for (uint32_t i = 0; i < objectTypeInfoPtr->propertyCount; i++) {
                             auto thisPropertyName = properties[i].name;
+                            Log("This Property Name: {}", thisPropertyName.c_str());
                             try {
-                                auto thisPropertyType = properties[i].info.type.GetRawType();
-                                propertyTypes.insert_or_assign(Utilities::ToLowerCase(thisPropertyName.c_str()), thisPropertyType);
+                                ScriptPropertyType type;
+                                Log("Getting raw type...");
+                                auto rawType = properties[i].info.type.GetRawType();
+                                type.RawType = rawType;
+                                Log("Got raw type.");
+                                try {
+                                    Log("Getting type info...");
+                                    auto *typeInfo = properties[i].info.type.GetTypeInfo();
+                                    Log("Got type info.");
+                                    if (typeInfo) {
+                                        auto rawTypeId = (size_t) rawType;
+                                        if (rawType == TypeInfo::RawType::kArraysEnd || (rawTypeId >= 0 && rawTypeId <= 15)) {
+                                            Log("Not getting name for {} - rawType is {}", thisPropertyName.c_str(), rawTypeId);
+                                            // ...
+                                        } else {
+                                            Log("Getting name...");
+                                            type.PropertyScriptName = typeInfo->GetName();
+                                            Log("Got name: '{}'.", type.PropertyScriptName);
+                                        }
+                                    }
+                                } catch (...) {
+                                    Log("Could not lookup type info for property {}", propertyName);
+                                }
+                                propertyTypes.insert_or_assign(Utilities::ToLowerCase(thisPropertyName.c_str()), type);
                             } catch (...) {
-                                Log("properties[i].info.type.GetRawType() failed for {}", scriptName);
+                                Log("No PropertyScriptName could be looked up for {}", propertyName);
                             }
                         }
                     }
@@ -54,7 +85,7 @@ namespace NoESP {
                 }
             }
 
-            std::optional<RE::BSScript::TypeInfo::RawType> type;
+            std::optional<ScriptPropertyType> type;
             return type;
         }
     };

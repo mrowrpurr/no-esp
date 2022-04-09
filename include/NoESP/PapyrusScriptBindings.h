@@ -17,7 +17,14 @@ using namespace RE::BSScript::Internal;
 
 namespace NoESP::PapyrusScriptBindings {
 
+    RE::TESForm* LookupForm(const std::string& formAsText) {
+        auto* form = RE::TESForm::LookupByEditorID(formAsText);
+        return form;
+    }
+
     void AutoFillProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& manuallyConfiguredProperties) {
+        auto* vm = VirtualMachine::GetSingleton();
+        auto* handlePolicy = vm->GetObjectHandlePolicy();
         auto* typeInfo = object->GetTypeInfo();
         if (typeInfo->propertyCount < 1) return;
 
@@ -47,8 +54,6 @@ namespace NoESP::PapyrusScriptBindings {
             if (propertyVariable->IsObject()) {
                 auto* form = RE::TESForm::LookupByEditorID(propertyName);
                 if (form) {
-                    auto* vm = VirtualMachine::GetSingleton();
-                    auto* handlePolicy = vm->GetObjectHandlePolicy();
                     RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
                     RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
                     Log("Creating a {} for property {}", typeName, propertyName.c_str());
@@ -65,14 +70,23 @@ namespace NoESP::PapyrusScriptBindings {
     }
 
     void SetProperties(const std::string& scriptName, const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& propertyMap) {
+        auto* vm = VirtualMachine::GetSingleton();
+        auto* handlePolicy = vm->GetObjectHandlePolicy();
         auto& propertyTypeCache = ScriptPropertyTypeCache::GetSingleton();
         for (const auto& [propertyName, propertyValue] : propertyMap) {
             try {
+                // for const auto propertyName 'someform' propertyValue 'Healing'
+                Log("for const auto propertyName '{}' propertyValue '{}'", propertyName, propertyValue.PropertyValueText);
                 auto propertyType = propertyTypeCache.GetOrLookupScriptPropertyType(scriptName, propertyName);
+                Log("GetOrLookup gave us '{}'", propertyType->PropertyScriptName);
                 if (propertyType.has_value()) {
-                    auto* property = object->GetProperty(propertyName);
+                    Log("property has_value() YES");
+                    auto *property = object->GetProperty(propertyName);
                     if (property) {
-                        switch (propertyType.value()) {
+                        TypeInfo::RawType rawType = propertyType.value().RawType.value();
+                        auto propertyScriptName = propertyType.value().PropertyScriptName;
+                        Log("Property Script Name = '{}'", propertyScriptName);
+                        switch (rawType) {
                             case TypeInfo::RawType::kString:
                                 property->SetString(propertyValue.PropertyValueText);
                                 break;
@@ -86,14 +100,29 @@ namespace NoESP::PapyrusScriptBindings {
                                 property->SetBool(Utilities::ToLowerCase(propertyValue.PropertyValueText) == "true");
                                 break;
                             default:
-                                Log("Unsupported property type for {}", propertyName);
+                                auto *form = LookupForm(propertyValue.PropertyValueText);
+                                if (form) {
+                                    auto typeName = propertyType->PropertyScriptName;
+                                    if (typeName.empty()) {
+                                        Log("Could not get a type name for property {}", propertyName);
+                                    } else {
+                                        RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
+                                        RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+                                        Log("Creating a {} for property {} for script {}", typeName, propertyName.c_str(),
+                                            typeName);
+                                        vm->CreateObject(typeName, objectPtr);
+                                        auto *bindPolicy = vm->GetObjectBindPolicy();
+                                        bindPolicy->BindObject(objectPtr, handle);
+                                        property->SetObject(objectPtr);
+                                    }
+                                } else {
+                                    Log("Property (Form?) could not be found: {}", propertyValue.PropertyValueText);
+                                }
                                 break;
                         }
                     } else {
-                        Log("Property not found {}", propertyName.c_str());
+                        Log("Property does not has_value() {}", propertyName.c_str());
                     }
-                } else {
-                    Log("Cache did not find script property {} {}", scriptName, propertyName);
                 }
             } catch (...) {
                 Log("Error setting property {}", propertyName.c_str());
