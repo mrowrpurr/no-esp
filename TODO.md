@@ -10,23 +10,22 @@
 - [ ] Properties can be set for all types!
   - [x] String
   - [x] Int
-  - [ ] Float
+  - [x] Float
   - [x] Bool
+  - [ ] Single Form
+    - [ ] Using Editor ID
+    - [ ] Using Editor ID matcher (gets first match)
+    - [ ] Using Form ID
+    - [ ] Using Form ID and plugin name
   - [ ] Array of String
   - [ ] Array of Int
   - [ ] Array of Float
   - [ ] Array of Bool
-  - [ ] Form Types
-    - [ ] Single Form
-      - [ ] Using Editor ID
-      - [ ] Using Editor ID matcher (gets first match)
-      - [ ] Using Form ID
-      - [ ] Using Form ID and plugin name
-    - [ ] Array of forms
-      - [ ] Using multiple Editor IDs
-      - [ ] Using Editor ID matcher (gets all matches)
-      - [ ] Using Form ID
-      - [ ] Using Form ID and plugin name
+  - [ ] Array of forms
+    - [ ] Using multiple Editor IDs
+    - [ ] Using Editor ID matcher (gets all matches)
+    - [ ] Using Form ID
+    - [ ] Using Form ID and plugin name
 
 # 1.0.0
 

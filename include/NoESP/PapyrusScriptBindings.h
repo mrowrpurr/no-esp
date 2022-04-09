@@ -79,6 +79,9 @@ namespace NoESP::PapyrusScriptBindings {
                             case TypeInfo::RawType::kInt:
                                 property->SetSInt(std::stoi(propertyValue.PropertyValueText));
                                 break;
+                            case TypeInfo::RawType::kFloat:
+                                property->SetFloat(std::stof(propertyValue.PropertyValueText));
+                                break;
                             case TypeInfo::RawType::kBool:
                                 property->SetBool(Utilities::ToLowerCase(propertyValue.PropertyValueText) == "true");
                                 break;
