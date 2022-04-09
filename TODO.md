@@ -13,8 +13,8 @@
   - [x] Float
   - [x] Bool
   - [ ] Single Form
-    - [ ] Using Editor ID
-    - [ ] Using Editor ID matcher (gets first match)
+    - [x] Using Editor ID
+    - [ ] Using Editor ID matcher (gets first match?)
     - [ ] Using Form ID
     - [ ] Using Form ID and plugin name
   - [ ] Array of String

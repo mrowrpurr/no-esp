@@ -18,8 +18,32 @@ using namespace RE::BSScript::Internal;
 namespace NoESP::PapyrusScriptBindings {
 
     RE::TESForm* LookupForm(const std::string& formAsText) {
-        auto* form = RE::TESForm::LookupByEditorID(formAsText);
-        return form;
+        static auto formIdWithPluginNamePattern = std::regex(R"(^\s*0x([abcdefABCDEF0123456789]+)\|(.*)\s*$)");
+        static auto formIdPattern = std::regex(R"(^\s*0x([abcdefABCDEF0123456789]+)\s*$)");
+
+        std::smatch matches;
+        if (std::regex_search(formAsText, matches, formIdWithPluginNamePattern)) {
+            try {
+                auto formId = std::stoi(matches[1].str(), nullptr, 16);
+                auto pluginFile = matches[2].str();
+                Log("LOOKUP BY ID {:x} And Plugin '{}'", formId, pluginFile);
+                return RE::TESDataHandler::GetSingleton()->LookupForm(formId, pluginFile);
+            } catch (...) {
+                Log("Problem looking up form '{}'", formAsText);
+                return nullptr;
+            }
+        } else if (std::regex_search(formAsText, matches, formIdPattern)) {
+            try {
+                auto formId = std::stoi(matches[1].str(), nullptr, 16);
+                Log("LOOKUP BY ID {:x}", formId);
+                return RE::TESForm::LookupByID(formId);
+            } catch (...) {
+                Log("Problem looking up form '{}'", formAsText);
+                return nullptr;
+            }
+        } else {
+            return RE::TESForm::LookupByEditorID(formAsText);
+        }
     }
 
     void AutoFillProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& manuallyConfiguredProperties) {
