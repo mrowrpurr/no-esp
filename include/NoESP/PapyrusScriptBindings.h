@@ -17,21 +17,25 @@ using namespace RE::BSScript::Internal;
 namespace NoESP::PapyrusScriptBindings {
 
     void AutoFillProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& manuallyConfiguredProperties) {
-//        if (true) return; // Come back to this...
-
         auto* typeInfo = object->GetTypeInfo();
+        if (typeInfo->propertyCount < 1) return;
+
         auto* properties = typeInfo->GetPropertyIter();
         for (uint32_t i = 0; i < typeInfo->propertyCount; i++) {
             auto propertyName = properties[i].name;
+
+            auto* form = RE::TESForm::LookupByEditorID(propertyName);
+            if (! form) return;
 
             if (manuallyConfiguredProperties.contains(Utilities::ToLowerCase(propertyName.c_str()))) {
                 Log("Not using autofill for property {} because it is manually configured", propertyName.c_str());
                 continue;
             }
 
-            Log("Getting type info about property '{}'", propertyName.c_str());
             auto* propertyTypeInfo = properties[i].info.type.GetTypeInfo();
-            auto type = propertyTypeInfo->GetRawType();
+
+            Log("Getting type info about property '{}'", propertyName.c_str());
+            auto type = properties[i].info.type.GetRawType();
             if (type == TypeInfo::RawType::kObject) {
                 Log("Property {} is OBJECT", propertyName.c_str());
                 Log("The property object is of type {}", propertyTypeInfo->name.c_str());

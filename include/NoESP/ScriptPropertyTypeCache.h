@@ -53,6 +53,9 @@ namespace NoESP {
                     return _scriptPropertyTypes[lowerScriptName][lowerPropertyName];
                 }
             }
+
+            std::optional<RE::BSScript::TypeInfo::RawType> type;
+            return type;
         }
     };
 }
