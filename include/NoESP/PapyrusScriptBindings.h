@@ -9,6 +9,7 @@
 
 #include "BindingDefinition.h"
 #include "ScriptPropertyTypeCache.h"
+#include "Utilities.h"
 
 using namespace NoESP;
 using namespace RE::BSScript;
@@ -32,24 +33,14 @@ namespace NoESP::PapyrusScriptBindings {
                 continue;
             }
 
-            auto* propertyTypeInfo = properties[i].info.type.GetTypeInfo();
-
-            Log("Getting type info about property '{}'", propertyName.c_str());
-            auto type = properties[i].info.type.GetRawType();
-            if (type == TypeInfo::RawType::kObject) {
-                Log("Property {} is OBJECT", propertyName.c_str());
-                Log("The property object is of type {}", propertyTypeInfo->name.c_str());
-            } else if (type == TypeInfo::RawType::kString) {
-                Log("Property {} is String", propertyName.c_str());
-            } else if (type == TypeInfo::RawType::kInt) {
-                Log("Property {} is Int", propertyName.c_str());
-            } else {
-                auto typeId = (size_t) type;
-                Log("Dunno prop type {}? Let's see here...", typeId);
-                Log("Dunno prop type NAME {}? Let's see here...", propertyName.c_str());
-                Log("The property object is of type {}", propertyTypeInfo->name.c_str());
+            auto rawType = properties[i].info.type.GetRawType();
+            auto rawTypeId = (size_t) rawType;
+            if (rawType == TypeInfo::RawType::kArraysEnd || (rawTypeId >= 0 && rawTypeId <= 15)) {
+                Log("Property is primitive type, cannot be auto filled {}", propertyName.c_str());
+                return;
             }
 
+            auto* propertyTypeInfo = properties[i].info.type.GetTypeInfo();
             auto typeName = propertyTypeInfo->name.c_str();
 
             auto* propertyVariable = object->GetProperty(propertyName);
@@ -83,12 +74,13 @@ namespace NoESP::PapyrusScriptBindings {
                     if (property) {
                         switch (propertyType.value()) {
                             case TypeInfo::RawType::kString:
-                                Log("Woohoo {} is a string!", propertyName.c_str());
                                 property->SetString(propertyValue.PropertyValueText);
                                 break;
                             case TypeInfo::RawType::kInt:
-                                Log("Woohoo {} is a int!", propertyName.c_str());
                                 property->SetSInt(std::stoi(propertyValue.PropertyValueText));
+                                break;
+                            case TypeInfo::RawType::kBool:
+                                property->SetBool(Utilities::ToLowerCase(propertyValue.PropertyValueText) == "true");
                                 break;
                             default:
                                 Log("Unsupported property type for {}", propertyName);

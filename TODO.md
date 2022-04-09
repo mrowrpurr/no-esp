@@ -9,9 +9,9 @@
 
 - [ ] Properties can be set for all types!
   - [x] String
-  - [ ] Int
+  - [x] Int
   - [ ] Float
-  - [ ] Bool
+  - [x] Bool
   - [ ] Array of String
   - [ ] Array of Int
   - [ ] Array of Float
