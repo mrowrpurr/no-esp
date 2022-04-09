@@ -2,8 +2,31 @@
 
 - [x] Make test suite run plz k thx
 - [x] Parse the examples added, plz k thx, like make them go!
-- [ ] Hook it up to Skyrim
-- [ ] Raid :)
+- [x] Raid :)
+- [x] Hook it up to Skyrim
+
+# Today!
+
+- [ ] Properties can be set for all types!
+  - [x] String
+  - [ ] Int
+  - [ ] Float
+  - [ ] Bool
+  - [ ] Array of String
+  - [ ] Array of Int
+  - [ ] Array of Float
+  - [ ] Array of Bool
+  - [ ] Form Types
+    - [ ] Single Form
+      - [ ] Using Editor ID
+      - [ ] Using Editor ID matcher (gets first match)
+      - [ ] Using Form ID
+      - [ ] Using Form ID and plugin name
+    - [ ] Array of forms
+      - [ ] Using multiple Editor IDs
+      - [ ] Using Editor ID matcher (gets all matches)
+      - [ ] Using Form ID
+      - [ ] Using Form ID and plugin name
 
 # 1.0.0
 
