@@ -12,11 +12,10 @@
   - [x] Int
   - [x] Float
   - [x] Bool
-  - [ ] Single Form
+  - [x] Single Form
     - [x] Using Editor ID
-    - [ ] Using Editor ID matcher (gets first match?)
-    - [ ] Using Form ID
-    - [ ] Using Form ID and plugin name
+    - [x] Using Form ID
+    - [x] Using Form ID and plugin name
   - [ ] Array of String
   - [ ] Array of Int
   - [ ] Array of Float
