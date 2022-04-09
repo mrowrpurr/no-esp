@@ -70,7 +70,6 @@ namespace NoESP::AutoBindingsFile {
                     properties.insert_or_assign(property.PropertyName, property);
 
                     line = line.substr(0, matches.position());
-                    Log("Found and added quoted property '{}' with value '{}', text is now '{}'", property.PropertyName, property.PropertyValueText, line);
                     ParsePropertiesFromLine(properties, line);
                 } else if (std::regex_search(line, matches, rightHandSidePropertyAssignment)) {
                     PropertyValue property;
@@ -80,10 +79,7 @@ namespace NoESP::AutoBindingsFile {
                     properties.insert_or_assign(property.PropertyName, property);
 
                     line = line.substr(0, matches.position());
-                    Log("Found and added property '{}' with value '{}', text is now '{}'", property.PropertyName, property.PropertyValueText, line);
                     ParsePropertiesFromLine(properties, line);
-                } else {
-                    Log("No properties in line '{}'", line);
                 }
             } catch (...) {
                 Log("Error parsing properties from line '{}'", line);
@@ -91,12 +87,8 @@ namespace NoESP::AutoBindingsFile {
         }
 
         BindingDefinition ParseLine(std::string line) {
-            Log("ParseLine '{}'", line);
-
             FormPropertyMap properties;
             ParsePropertiesFromLine(properties, line);
-
-            Log("Line after Property Parse '{}'", line);
 
             BindingDefinition entry;
             entry.PropertyValues = properties;

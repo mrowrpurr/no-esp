@@ -26,7 +26,6 @@ namespace NoESP::PapyrusScriptBindings {
             try {
                 auto formId = std::stoi(matches[1].str(), nullptr, 16);
                 auto pluginFile = matches[2].str();
-                Log("LOOKUP BY ID {:x} And Plugin '{}'", formId, pluginFile);
                 return RE::TESDataHandler::GetSingleton()->LookupForm(formId, pluginFile);
             } catch (...) {
                 Log("Problem looking up form '{}'", formAsText);
@@ -35,7 +34,6 @@ namespace NoESP::PapyrusScriptBindings {
         } else if (std::regex_search(formAsText, matches, formIdPattern)) {
             try {
                 auto formId = std::stoi(matches[1].str(), nullptr, 16);
-                Log("LOOKUP BY ID {:x}", formId);
                 return RE::TESForm::LookupByID(formId);
             } catch (...) {
                 Log("Problem looking up form '{}'", formAsText);
@@ -80,7 +78,6 @@ namespace NoESP::PapyrusScriptBindings {
                 if (form) {
                     RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
                     RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
-                    Log("Creating a {} for property {}", typeName, propertyName.c_str());
                     vm->CreateObject(typeName, objectPtr);
                     auto* bindPolicy = vm->GetObjectBindPolicy();
                     bindPolicy->BindObject(objectPtr, handle);
@@ -100,16 +97,12 @@ namespace NoESP::PapyrusScriptBindings {
         for (const auto& [propertyName, propertyValue] : propertyMap) {
             try {
                 // for const auto propertyName 'someform' propertyValue 'Healing'
-                Log("for const auto propertyName '{}' propertyValue '{}'", propertyName, propertyValue.PropertyValueText);
                 auto propertyType = propertyTypeCache.GetOrLookupScriptPropertyType(scriptName, propertyName);
-                Log("GetOrLookup gave us '{}'", propertyType->PropertyScriptName);
                 if (propertyType.has_value()) {
-                    Log("property has_value() YES");
                     auto *property = object->GetProperty(propertyName);
                     if (property) {
                         TypeInfo::RawType rawType = propertyType.value().RawType.value();
                         auto propertyScriptName = propertyType.value().PropertyScriptName;
-                        Log("Property Script Name = '{}'", propertyScriptName);
                         switch (rawType) {
                             case TypeInfo::RawType::kString:
                                 property->SetString(propertyValue.PropertyValueText);
@@ -132,8 +125,6 @@ namespace NoESP::PapyrusScriptBindings {
                                     } else {
                                         RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
                                         RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
-                                        Log("Creating a {} for property {} for script {}", typeName, propertyName.c_str(),
-                                            typeName);
                                         vm->CreateObject(typeName, objectPtr);
                                         auto *bindPolicy = vm->GetObjectBindPolicy();
                                         bindPolicy->BindObject(objectPtr, handle);
@@ -144,8 +135,6 @@ namespace NoESP::PapyrusScriptBindings {
                                 }
                                 break;
                         }
-                    } else {
-                        Log("Property does not has_value() {}", propertyName.c_str());
                     }
                 }
             } catch (...) {
@@ -278,7 +267,6 @@ namespace NoESP::PapyrusScriptBindings {
     }
 
     void BindToFormId(const std::string& scriptName, RE::FormID formId, FormPropertyMap& propertiesToSet, const std::string optionalPluginFile = "", bool addOnce = false) {
-        Log("Bind script '{}' to form ID 0x{:x}", scriptName, formId);
         if (optionalPluginFile.empty()) {
             auto* form = RE::TESForm::LookupByID(formId);
             if (form) {

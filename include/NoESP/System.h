@@ -112,7 +112,6 @@ namespace NoESP {
         }
 
         void AddFormIdForScript(RE::FormID formId, const std::string& scriptName, FormPropertyMap& propertiesToSet) {
-            Log("AddFormIdForScript() '{}' 0x{:x}", scriptName, formId);
             if (_formIdsToScriptNames.contains(formId)) {
                 auto& map = _formIdsToScriptNames[formId];
                 if (map.contains(scriptName)) {
@@ -128,7 +127,6 @@ namespace NoESP {
             }
         }
         void AddBaseFormIdForScript(RE::FormID formId, const std::string& scriptName, FormPropertyMap& propertiesToSet) {
-            Log("AddBaseFormIdForScript() '{}' 0x{:x}", scriptName, formId);
             if (_baseFormIdsToScriptNames.contains(formId)) {
                 auto& map = _baseFormIdsToScriptNames[formId];
                 if (map.contains(scriptName)) {
@@ -185,11 +183,8 @@ namespace NoESP {
 
         void BindFormIdsToScripts() {
             auto& bindingsForForms = GetScriptsForDirectlyReferencedForms();
-            Log("Binding Form IDs to Scripts for {} forms", bindingsForForms.size());
             for (auto& [formId, scriptNamesAndPropertyMaps] : bindingsForForms) {
-                Log("Form ID in 'bindingsForForms' {:x}", formId);
                 for (auto& [scriptName, propertyMap] : scriptNamesAndPropertyMaps) {
-                    Log("Script name... '{}'", scriptName);
                     if (TryLinkScript(scriptName)) {
                         PapyrusScriptBindings::BindToFormId(scriptName, formId, propertyMap);
                     } else {
@@ -397,23 +392,19 @@ namespace NoESP {
         }
 
         static void SetupFormBindings(RE::TESForm* form, const std::string& scriptName, FormPropertyMap& propertiesToSet) {
-            Log("Setup form bindings for '{}' 0x{:x} for script '{}'", form->GetName(), form->formID, scriptName);
             auto& system = System::GetSingleton();
-
-            // TODO Only do this if the script exists!
-            // TODO And when we check if the script exists, maybe it could give back stored type info *'s ...
-            // TODO And even the index of each needed property, assuming that's stable.
-
             if (form) {
-                Log("Hey, form. Setup stuff... {:x}", form->formID);
+                Log("[Form Binding] Form:{:x} '{}' Script:{}", form->formID, form->GetName(), scriptName);
                 system.AddFormIdForScript(form->formID, scriptName, propertiesToSet);
                 if (! form->AsReference()) {
-                    Log("Oh, snap. Did you know that {:x} is not a reference?", form->formID);
                     if (form->GetFormType() == RE::FormType::Keyword) {
+                        Log("[Form Binding] Keyword:{} Script:{}", form->GetName(), scriptName);
                         system.AddKeywordIdForScript(form->As<RE::BGSKeyword>(), scriptName, propertiesToSet);
                     } else if (form->GetFormType() == RE::FormType::FormList) {
+                        Log("[Form Binding] FormList:{} Script:{}", form->GetName(), scriptName);
                         system.AddFormListIdForScript(form->As<RE::BGSListForm>(), scriptName, propertiesToSet);
                     } else {
+                        Log("[Form Binding] BaseForm:{:x} '{}' Script:{}", form->formID, form->GetName(), scriptName);
                         system.AddBaseFormIdForScript(form->formID, scriptName, propertiesToSet);
                     }
                 }
