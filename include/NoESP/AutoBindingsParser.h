@@ -356,14 +356,16 @@ namespace NoESP::AutoBindingsFile {
 
 
     void ParseFormTypesFromLine(BindingDefinition& def, std::string& line) {
-        static auto formTypeGroupPattern = std::regex(R"(\s+(\[([^\]]+)\])$)");
+        static auto formTypesPattern = std::regex(R"(^\s*([^\s]+)\s+\[([^\]]+)\])");
+        static auto justTheTypesInTheBrackets = std::regex(R"(\s+\[([^\]]+)\]\s*)");
+
         std::smatch matches;
-        if (std::regex_search(line, matches, formTypeGroupPattern)) {
-            line = line.substr(0, matches.position());
-            auto formTypeNames = matches[1].str();
+        if (std::regex_search(line, matches, formTypesPattern) && std::regex_search(line, matches, justTheTypesInTheBrackets)) {
+            auto formTypeNames = Utilities::ToLowerCase(matches[1].str());
+            line = line.substr(0, matches.position()) + line.substr(matches.position() + matches.length());
             auto index = formTypeNames.find('|');
             while (index != std::string::npos) {
-                auto formTypeName = Utilities::ToLowerCase(formTypeNames.substr(0, index));
+                auto formTypeName = formTypeNames.substr(0, index);
                 if (FORM_TYPES_BY_NAME.contains(formTypeName)) {
                     def.FormTypes.insert(FORM_TYPES_BY_NAME[formTypeName]);
                 } else {

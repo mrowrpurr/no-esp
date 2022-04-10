@@ -118,8 +118,9 @@ go_bandit([](){
             AssertThat(def.PropertyValues["z"].PropertyValueText, Equals(" cool with an = sign too "));
             AssertThat(def.PropertyValues["multiline"].PropertyValueText, Equals("\nthis\t has special\n characters\n"));
         });
+        xit("ScriptName Ints=[1, 2, 3]", [&](){});
         it("ScriptName [BOOK]", [&](){
-            auto def = NoESP::AutoBindingsFile::ParseLine(R"(MyScript [BOOK]")");
+            auto def = NoESP::AutoBindingsFile::ParseLine(R"(MyScript [BOOK])");
 
             AssertThat(def.ScriptName, Equals("MyScript"));
             AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
@@ -131,6 +132,16 @@ go_bandit([](){
 
             AssertThat(formTypes.size(), Equals(1));
             AssertThat(formTypes[0], Equals(RE::FormType::Book));
+        });
+        it("ScriptName [weapon|armor]", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine(R"(MyScript [weapon|armor])");
+
+            AssertThat(def.ScriptName, Equals("MyScript"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // The player
+            AssertThat(def.FormTypes.size(), Equals(2));
+            AssertThat(def.FormTypes, Contains(RE::FormType::Weapon));
+            AssertThat(def.FormTypes, Contains(RE::FormType::Armor));
         });
     });
 });
