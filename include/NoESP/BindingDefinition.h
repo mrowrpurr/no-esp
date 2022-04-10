@@ -3,6 +3,8 @@
 #include <any>
 #include <regex>
 
+#include "Utilities.h"
+
 namespace NoESP {
 
     enum BindingDefinitionType { EditorID, FormID, Invalid };
@@ -40,4 +42,24 @@ namespace NoESP {
         BindingDefinitionType Type = BindingDefinitionType::Invalid;
         EditorIdMatcher EditorIdMatcher;
     };
+
+    // Yo gurl, move this to a better place!
+    static bool DoesEditorIdMatch(const EditorIdMatcher& matcher, const std::string& editorIdText) {
+        if (editorIdText.empty()) return false;
+        std::string editorId = Utilities::ToLowerCase(editorIdText);
+        switch (matcher.Type) {
+            case EditorIdMatcherType::Exact:
+                return editorId == matcher.Text;
+            case EditorIdMatcherType::PrefixMatch:
+                return editorId.starts_with(matcher.Text);
+            case EditorIdMatcherType::SuffixMatch:
+                return editorId.ends_with(matcher.Text);
+            case EditorIdMatcherType::PrefixAndSuffixMatch:
+                return editorId.find(matcher.Text) != std::string::npos;
+            case EditorIdMatcherType::RegularExpression:
+                return std::regex_match(editorId, matcher.RegularExpression);
+            default:
+                return false;
+        }
+    }
 }

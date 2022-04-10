@@ -51,7 +51,8 @@ namespace NoESP::PapyrusScriptBindings {
         return items;
     };
 
-    RE::TESForm* LookupForm(const std::string& formAsText) {
+    std::vector<RE::TESForm*> LookupForms(const std::string& formAsText, bool returnOne = false) {
+        std::vector<RE::TESForm*> forms;
         static auto formIdWithPluginNamePattern = std::regex(R"(^\s*0x([abcdefABCDEF0123456789]+)\|(.*)\s*$)");
         static auto formIdPattern = std::regex(R"(^\s*0x([abcdefABCDEF0123456789]+)\s*$)");
 
@@ -60,22 +61,36 @@ namespace NoESP::PapyrusScriptBindings {
             try {
                 auto formId = std::stoi(matches[1].str(), nullptr, 16);
                 auto pluginFile = matches[2].str();
-                return RE::TESDataHandler::GetSingleton()->LookupForm(formId, pluginFile);
+                auto* form = RE::TESDataHandler::GetSingleton()->LookupForm(formId, pluginFile);
+                if (form) {
+                    forms.emplace_back(form);
+                    if (returnOne) return forms;
+                }
             } catch (...) {
                 Log("Problem looking up form '{}'", formAsText);
-                return nullptr;
             }
         } else if (std::regex_search(formAsText, matches, formIdPattern)) {
             try {
                 auto formId = std::stoi(matches[1].str(), nullptr, 16);
-                return RE::TESForm::LookupByID(formId);
+                auto* form = RE::TESForm::LookupByID(formId);
+                if (form) {
+                    forms.emplace_back(form);
+                    if (returnOne) return forms;
+                }
             } catch (...) {
                 Log("Problem looking up form '{}'", formAsText);
-                return nullptr;
             }
         } else {
-            return RE::TESForm::LookupByEditorID(formAsText);
+            auto matcher = NoESP::AutoBindingsFile::ParseEditorIdMatchText(formAsText);
+            const auto& [map, lock] = RE::TESForm::GetAllFormsByEditorID();
+            for (auto iterator = map->begin(); iterator != map->end(); iterator++) {
+                if (NoESP::DoesEditorIdMatch(matcher, iterator->first.c_str())) {
+                    forms.emplace_back(iterator->second);
+                    if (returnOne) return forms;
+                }
+            }
         }
+        return forms;
     }
 
     void AutoFillProperties(const RE::BSTSmartPointer<RE::BSScript::Object>& object, FormPropertyMap& manuallyConfiguredProperties) {
@@ -192,14 +207,18 @@ namespace NoESP::PapyrusScriptBindings {
                             }
                             default: {
                                 if (property->IsArray()) {
-                                    auto values = GetValuesAsArray<RE::TESForm *>(propertyValue.PropertyValueText,
-                                                                                  [](const auto &text) {
-                                                                                      return LookupForm(text);
-                                                                                  });
+                                    std::set<RE::TESForm*> values;
+                                    GetValuesAsArray<bool>(propertyValue.PropertyValueText, [&values](const auto &text) {
+                                        auto foundForms = LookupForms(text);
+                                        for (auto* form : foundForms) {
+                                            values.insert(form);
+                                        }
+                                        return true;
+                                    });
                                     RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
                                     vm->CreateArray(TypeInfo{TypeInfo::RawType::kObject}, values.size(), papyrusArray);
-                                    for (int i = 0; i < values.size(); i++) {
-                                        auto *form = values[i];
+                                    int i = 0;
+                                    for (auto* form : values) {
                                         if (form) {
                                             auto typeName = propertyType->PropertyScriptName;
                                             RE::VMHandle handle = handlePolicy->GetHandleForObject(
@@ -215,22 +234,26 @@ namespace NoESP::PapyrusScriptBindings {
                                                 papyrusArray->data()[i].SetObject(objectPtr);
                                             }
                                         }
+                                        i++;
                                     }
                                     property->SetArray(papyrusArray);
                                 } else {
-                                    auto *form = LookupForm(propertyValue.PropertyValueText);
-                                    if (form) {
-                                        auto typeName = propertyType->PropertyScriptName;
-                                        RE::VMHandle handle = handlePolicy->GetHandleForObject(
-                                                form->GetFormType(), form);
-                                        if (typeName.empty()) {
-                                            Log("Could not get a type name for property {}", propertyName);
-                                        } else {
-                                            RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
-                                            vm->CreateObject(typeName, objectPtr);
-                                            auto *bindPolicy = vm->GetObjectBindPolicy();
-                                            bindPolicy->BindObject(objectPtr, handle);
-                                            property->SetObject(objectPtr);
+                                    auto forms = LookupForms(propertyValue.PropertyValueText, true); // Only return one
+                                    if (! forms.empty()) {
+                                        auto* form = forms[0];
+                                        if (form) {
+                                            auto typeName = propertyType->PropertyScriptName;
+                                            RE::VMHandle handle = handlePolicy->GetHandleForObject(
+                                                    form->GetFormType(), form);
+                                            if (typeName.empty()) {
+                                                Log("Could not get a type name for property {}", propertyName);
+                                            } else {
+                                                RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+                                                vm->CreateObject(typeName, objectPtr);
+                                                auto *bindPolicy = vm->GetObjectBindPolicy();
+                                                bindPolicy->BindObject(objectPtr, handle);
+                                                property->SetObject(objectPtr);
+                                            }
                                         }
                                     }
                                 }
