@@ -17,6 +17,40 @@ using namespace RE::BSScript::Internal;
 
 namespace NoESP::PapyrusScriptBindings {
 
+    template <typename T>
+    std::vector<T> GetValuesAsArray(const std::string& text, const std::function<T(const std::string&)>& itemTransformer) {
+        static auto getFirstItemWithQuotes = std::regex(R"(^\s*\"([^\"]+)\"\s*,)");
+        static auto getFirstItem = std::regex(R"(^\s*([^,]+)\s*,)");
+        std::vector<T> items;
+        Log("Get Values as Array '{}'", text);
+        if (text.starts_with('[') && text.ends_with(']')) {
+            std::string textBody = text.substr(1, text.length() - 2); // Remove '[' and ']'oo
+            Log("Body: '{}'", textBody);
+            while (true) {
+                std::smatch matches;
+                if (std::regex_search(textBody, matches, getFirstItemWithQuotes)) {
+                    auto value = matches[1].str();
+                    items.emplace_back(itemTransformer(value));
+                    textBody = textBody.substr(matches.position() + matches.length() + 1); // Start right after the regex match
+                    Log("Body: '{}'", textBody);
+                } else if (std::regex_search(textBody, matches, getFirstItem)) {
+                    auto value = matches[1].str();
+                    items.emplace_back(itemTransformer(value));
+                    textBody = textBody.substr(matches.position() + matches.length() + 1); // Start right after the regex match
+                    Log("Body: '{}'", textBody);
+                } else {
+                    items.emplace_back(itemTransformer(textBody));
+                    Log("Add LAST item '{}'", textBody);
+                    break; // No longer matches any patterns
+                }
+            }
+        } else {
+            Log("Add whole thing '{}'", text);
+            items.emplace_back(itemTransformer(text));
+        }
+        return items;
+    };
+
     RE::TESForm* LookupForm(const std::string& formAsText) {
         static auto formIdWithPluginNamePattern = std::regex(R"(^\s*0x([abcdefABCDEF0123456789]+)\|(.*)\s*$)");
         static auto formIdPattern = std::regex(R"(^\s*0x([abcdefABCDEF0123456789]+)\s*$)");
@@ -116,6 +150,16 @@ namespace NoESP::PapyrusScriptBindings {
                             case TypeInfo::RawType::kBool:
                                 property->SetBool(Utilities::ToLowerCase(propertyValue.PropertyValueText) == "true");
                                 break;
+                            case TypeInfo::RawType::kIntArray: {
+                                auto ints = GetValuesAsArray<int>(propertyValue.PropertyValueText, [](const auto& text){ return std::stoi(text); });
+                                RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
+                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kInt }, ints.size(), papyrusArray);
+                                for (int i = 0; i < ints.size(); i++) {
+                                    papyrusArray->data()[i].SetSInt(ints[i]);
+                                }
+                                property->SetArray(papyrusArray);
+                                break;
+                            }
                             default:
                                 auto *form = LookupForm(propertyValue.PropertyValueText);
                                 if (form) {
