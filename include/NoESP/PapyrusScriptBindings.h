@@ -174,6 +174,14 @@ namespace NoESP::PapyrusScriptBindings {
                                 property->SetArray(papyrusArray);
                                 break;
                             }
+                            case TypeInfo::RawType::kBoolArray: {
+                                auto values = GetValuesAsArray<bool>(propertyValue.PropertyValueText, [](const auto& text){ return Utilities::ToLowerCase(text) == "true"; });
+                                RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
+                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kBool }, values.size(), papyrusArray);
+                                for (int i = 0; i < values.size(); i++) { papyrusArray->data()[i].SetBool(values[i]); }
+                                property->SetArray(papyrusArray);
+                                break;
+                            }
                             default:
                                 auto *form = LookupForm(propertyValue.PropertyValueText);
                                 if (form) {

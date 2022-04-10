@@ -19,7 +19,7 @@
   - [x] Array of String
   - [x] Array of Int
   - [x] Array of Float
-  - [ ] Array of Bool
+  - [x] Array of Bool
   - [ ] Array of forms
     - [ ] Using multiple Editor IDs
     - [ ] Using Editor ID matcher (gets all matches)
