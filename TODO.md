@@ -16,9 +16,9 @@
     - [x] Using Editor ID
     - [x] Using Form ID
     - [x] Using Form ID and plugin name
-  - [ ] Array of String
+  - [x] Array of String
   - [x] Array of Int
-  - [ ] Array of Float
+  - [x] Array of Float
   - [ ] Array of Bool
   - [ ] Array of forms
     - [ ] Using multiple Editor IDs
