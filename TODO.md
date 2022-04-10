@@ -17,7 +17,7 @@
     - [x] Using Form ID
     - [x] Using Form ID and plugin name
   - [ ] Array of String
-  - [ ] Array of Int
+  - [x] Array of Int
   - [ ] Array of Float
   - [ ] Array of Bool
   - [ ] Array of forms
