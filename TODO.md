@@ -29,6 +29,8 @@
 # Today!
 
 - [ ] Can provide the name of a form type, e.g. `BOOK`
+  - [x] Can parse form types given human readable names
+  - [ ] Can attach script to everything of a given form type
 - [ ] Can provide form type AND editor ID matcher
 - [ ] Can provide Form NAME matcher
 - [ ] Can provide Form NAME matcher with form type

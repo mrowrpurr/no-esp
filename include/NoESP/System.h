@@ -393,6 +393,8 @@ namespace NoESP {
         }
 
         static void SetupFormBindings(RE::TESForm* form, const std::string& scriptName, BindingDefinition& def) {
+            if (! def.FormTypes.empty() && ! def.FormTypes.contains(form->GetFormType())) return;
+
             auto& system = System::GetSingleton();
             if (form) {
                 Log("[Form Binding] Form:{:x} '{}' Script:{}", form->formID, form->GetName(), scriptName);
@@ -447,7 +449,8 @@ namespace NoESP {
                 for (auto iterator = map->begin(); iterator != map->end(); iterator++) {
                     for (auto& [matcher, scriptName, def] : editorIdMatchers) {
                         if (DoesEditorIdMatch(matcher, iterator->first.c_str())) {
-                            SetupFormBindings(iterator->second, scriptName, def);
+                            auto* form = iterator->second;
+                            SetupFormBindings(form, scriptName, def);
                         }
                     }
                 }
