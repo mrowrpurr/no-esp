@@ -65,9 +65,6 @@ namespace NoESP::PapyrusScriptBindings {
                 if (form) {
                     forms.emplace_back(form);
                     if (returnOne) return forms;
-
-                    form->GetFormType()
-
                 }
             } catch (...) {
                 Log("Problem looking up form '{}'", formAsText);
