@@ -15,3 +15,11 @@ target_include_directories(NoEsp.UnitTests PRIVATE ${SNOWHOUSE_INCLUDE_DIRS})
 
 # spdlog for logging
 target_link_libraries(NoEsp.UnitTests PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
+
+if(SKYRIM_AE)
+    target_link_libraries(NoEsp.UnitTests PUBLIC CommonLibSSE::CommonLibSSE)
+elseif(SKYRIM_SE)
+    target_link_libraries(NoEsp.UnitTests PUBLIC CommonLibSSE::CommonLibSSE)
+elseif(SKYRIM_VR)
+    target_link_libraries(NoEsp.UnitTests PUBLIC CommonLibVR::CommonLibVR)
+endif()

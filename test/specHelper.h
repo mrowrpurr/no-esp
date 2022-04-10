@@ -5,6 +5,8 @@
 #include <bandit/bandit.h>
 #include <snowhouse/snowhouse.h>
 
+#include <RE/F/FormTypes.h>
+
 using namespace bandit;
 using namespace snowhouse;
 

@@ -118,5 +118,19 @@ go_bandit([](){
             AssertThat(def.PropertyValues["z"].PropertyValueText, Equals(" cool with an = sign too "));
             AssertThat(def.PropertyValues["multiline"].PropertyValueText, Equals("\nthis\t has special\n characters\n"));
         });
+        it("ScriptName [BOOK]", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine(R"(MyScript [BOOK]")");
+
+            AssertThat(def.ScriptName, Equals("MyScript"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // The player
+            AssertThat(def.FormTypes.size(), Equals(1));
+
+            std::vector<RE::FormType> formTypes;
+            formTypes.assign(def.FormTypes.begin(), def.FormTypes.end());
+
+            AssertThat(formTypes.size(), Equals(1));
+            AssertThat(formTypes[0], Equals(RE::FormType::Book));
+        });
     });
 });

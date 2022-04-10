@@ -2,6 +2,7 @@
 
 #include <any>
 #include <regex>
+#include <set>
 
 #include "Utilities.h"
 
@@ -10,6 +11,7 @@ namespace NoESP {
     enum BindingDefinitionType { EditorID, FormID, Invalid };
     enum EditorIdMatcherType { Exact, PrefixMatch, SuffixMatch, PrefixAndSuffixMatch, RegularExpression, None };
 
+    // Note: this can be removed and switch back to using the direct raw type. No longer using unit tests... :'(
     enum CommonLibRawType {
         kNone = 0, kObject = 1, kString = 2, kInt = 3, kFloat = 4, kBool = 5,
         kNoneArray = 10, kObjectArray = 11, kStringArray = 12, kIntArray = 13, kFloatArray = 14, kBoolArray = 15,
@@ -41,6 +43,7 @@ namespace NoESP {
         FormPropertyMap PropertyValues;
         BindingDefinitionType Type = BindingDefinitionType::Invalid;
         EditorIdMatcher EditorIdMatcher;
+        std::set<RE::FormType> FormTypes;
     };
 
     // Yo gurl, move this to a better place!
