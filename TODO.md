@@ -5,7 +5,7 @@
 - [x] Raid :)
 - [x] Hook it up to Skyrim
 
-# Today!
+# Yesterday!
 
 - [x] Properties can be set for all types!
   - [x] String
@@ -25,7 +25,13 @@
     - [x] Using Editor ID matcher (gets all matches)
     - [x] Using Form ID
     - [x] Using Form ID and plugin name
+
+# Today!
+
 - [ ] Can provide the name of a form type, e.g. `BOOK`
+- [ ] Can provide form type AND editor ID matcher
+- [ ] Can provide Form NAME matcher
+- [ ] Can provide Form NAME matcher with form type
 
 # 1.0.0
 
