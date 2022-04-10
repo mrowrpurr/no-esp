@@ -20,6 +20,7 @@ namespace NoESP::PapyrusScriptBindings {
     template <typename T>
     std::vector<T> GetValuesAsArray(const std::string& text, const std::function<T(const std::string&)>& itemTransformer) {
         static auto getFirstItemWithQuotes = std::regex(R"(^\s*\"([^\"]+)\"\s*,)");
+        static auto getLastItemWithQuotes = std::regex(R"(^\s*\"([^\"]+)\"\s*$)");
         static auto getFirstItem = std::regex(R"(^\s*([^,]+)\s*,)");
         std::vector<T> items;
         if (text.starts_with('[') && text.ends_with(']')) {
@@ -29,7 +30,12 @@ namespace NoESP::PapyrusScriptBindings {
                 if (std::regex_search(textBody, matches, getFirstItemWithQuotes)) {
                     auto value = matches[1].str();
                     items.emplace_back(itemTransformer(value));
-                    textBody = textBody.substr(matches.position() + matches.length() + 1); // Start right after the regex match
+                    textBody = textBody.substr(
+                            matches.position() + matches.length() + 1); // Start right after the regex match
+                } else if (std::regex_search(textBody, matches, getLastItemWithQuotes)) {
+                        auto value = matches[1].str();
+                        items.emplace_back(itemTransformer(value));
+                        break; // Matched all the way to the end of the string
                 } else if (std::regex_search(textBody, matches, getFirstItem)) {
                     auto value = matches[1].str();
                     items.emplace_back(itemTransformer(value));
@@ -144,11 +150,27 @@ namespace NoESP::PapyrusScriptBindings {
                             case TypeInfo::RawType::kBool:
                                 property->SetBool(Utilities::ToLowerCase(propertyValue.PropertyValueText) == "true");
                                 break;
-                            case TypeInfo::RawType::kIntArray: {
-                                auto ints = GetValuesAsArray<int>(propertyValue.PropertyValueText, [](const auto& text){ return std::stoi(text); });
+                            case TypeInfo::RawType::kStringArray: {
+                                auto values = GetValuesAsArray<std::string>(propertyValue.PropertyValueText, [](const auto& text){ return text; });
                                 RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
-                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kInt }, ints.size(), papyrusArray);
-                                for (int i = 0; i < ints.size(); i++) { papyrusArray->data()[i].SetSInt(ints[i]); }
+                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kString }, values.size(), papyrusArray);
+                                for (int i = 0; i < values.size(); i++) { papyrusArray->data()[i].SetString(values[i]); }
+                                property->SetArray(papyrusArray);
+                                break;
+                            }
+                            case TypeInfo::RawType::kIntArray: {
+                                auto values = GetValuesAsArray<int>(propertyValue.PropertyValueText, [](const auto& text){ return std::stoi(text); });
+                                RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
+                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kInt }, values.size(), papyrusArray);
+                                for (int i = 0; i < values.size(); i++) { papyrusArray->data()[i].SetSInt(values[i]); }
+                                property->SetArray(papyrusArray);
+                                break;
+                            }
+                            case TypeInfo::RawType::kFloatArray: {
+                                auto values = GetValuesAsArray<float>(propertyValue.PropertyValueText, [](const auto& text){ return std::stof(text); });
+                                RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
+                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kFloat }, values.size(), papyrusArray);
+                                for (int i = 0; i < values.size(); i++) { papyrusArray->data()[i].SetFloat(values[i]); }
                                 property->SetArray(papyrusArray);
                                 break;
                             }
