@@ -151,66 +151,104 @@ namespace NoESP::PapyrusScriptBindings {
                                 property->SetBool(Utilities::ToLowerCase(propertyValue.PropertyValueText) == "true");
                                 break;
                             case TypeInfo::RawType::kStringArray: {
-                                auto values = GetValuesAsArray<std::string>(propertyValue.PropertyValueText, [](const auto& text){ return text; });
+                                auto values = GetValuesAsArray<std::string>(propertyValue.PropertyValueText,
+                                                                            [](const auto &text) { return text; });
                                 RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
-                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kString }, values.size(), papyrusArray);
-                                for (int i = 0; i < values.size(); i++) { papyrusArray->data()[i].SetString(values[i]); }
+                                vm->CreateArray(TypeInfo{TypeInfo::RawType::kString}, values.size(), papyrusArray);
+                                for (int i = 0; i < values.size(); i++) {
+                                    papyrusArray->data()[i].SetString(values[i]);
+                                }
                                 property->SetArray(papyrusArray);
                                 break;
                             }
                             case TypeInfo::RawType::kIntArray: {
-                                auto values = GetValuesAsArray<int>(propertyValue.PropertyValueText, [](const auto& text){ return std::stoi(text); });
+                                auto values = GetValuesAsArray<int>(propertyValue.PropertyValueText,
+                                                                    [](const auto &text) { return std::stoi(text); });
                                 RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
-                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kInt }, values.size(), papyrusArray);
+                                vm->CreateArray(TypeInfo{TypeInfo::RawType::kInt}, values.size(), papyrusArray);
                                 for (int i = 0; i < values.size(); i++) { papyrusArray->data()[i].SetSInt(values[i]); }
                                 property->SetArray(papyrusArray);
                                 break;
                             }
                             case TypeInfo::RawType::kFloatArray: {
-                                auto values = GetValuesAsArray<float>(propertyValue.PropertyValueText, [](const auto& text){ return std::stof(text); });
+                                auto values = GetValuesAsArray<float>(propertyValue.PropertyValueText,
+                                                                      [](const auto &text) { return std::stof(text); });
                                 RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
-                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kFloat }, values.size(), papyrusArray);
+                                vm->CreateArray(TypeInfo{TypeInfo::RawType::kFloat}, values.size(), papyrusArray);
                                 for (int i = 0; i < values.size(); i++) { papyrusArray->data()[i].SetFloat(values[i]); }
                                 property->SetArray(papyrusArray);
                                 break;
                             }
                             case TypeInfo::RawType::kBoolArray: {
-                                auto values = GetValuesAsArray<bool>(propertyValue.PropertyValueText, [](const auto& text){ return Utilities::ToLowerCase(text) == "true"; });
+                                auto values = GetValuesAsArray<bool>(propertyValue.PropertyValueText,
+                                                                     [](const auto &text) {
+                                                                         return Utilities::ToLowerCase(text) == "true";
+                                                                     });
                                 RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
-                                vm->CreateArray(TypeInfo{ TypeInfo::RawType::kBool }, values.size(), papyrusArray);
+                                vm->CreateArray(TypeInfo{TypeInfo::RawType::kBool}, values.size(), papyrusArray);
                                 for (int i = 0; i < values.size(); i++) { papyrusArray->data()[i].SetBool(values[i]); }
                                 property->SetArray(papyrusArray);
                                 break;
                             }
-                            default:
-                                auto *form = LookupForm(propertyValue.PropertyValueText);
-                                if (form) {
-                                    auto typeName = propertyType->PropertyScriptName;
-                                    if (typeName.empty()) {
-                                        Log("Could not get a type name for property {}", propertyName);
-                                    } else {
-                                        RE::VMHandle handle = handlePolicy->GetHandleForObject(form->GetFormType(), form);
-                                        RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
-                                        vm->CreateObject(typeName, objectPtr);
-                                        auto *bindPolicy = vm->GetObjectBindPolicy();
-                                        bindPolicy->BindObject(objectPtr, handle);
-                                        property->SetObject(objectPtr);
+                            default: {
+                                if (property->IsArray()) {
+                                    auto values = GetValuesAsArray<RE::TESForm *>(propertyValue.PropertyValueText,
+                                                                                  [](const auto &text) {
+                                                                                      return LookupForm(text);
+                                                                                  });
+                                    RE::BSTSmartPointer<RE::BSScript::Array> papyrusArray;
+                                    vm->CreateArray(TypeInfo{TypeInfo::RawType::kObject}, values.size(), papyrusArray);
+                                    for (int i = 0; i < values.size(); i++) {
+                                        auto *form = values[i];
+                                        if (form) {
+                                            auto typeName = propertyType->PropertyScriptName;
+                                            RE::VMHandle handle = handlePolicy->GetHandleForObject(
+                                                    form->GetFormType(), form);
+                                            if (typeName.empty()) {
+                                                Log("Could not get a type name for property {}", propertyName);
+                                            } else {
+                                                RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+                                                vm->CreateObject(typeName, objectPtr);
+                                                auto *bindPolicy = vm->GetObjectBindPolicy();
+                                                bindPolicy->BindObject(objectPtr, handle);
+                                                property->SetObject(objectPtr);
+                                                papyrusArray->data()[i].SetObject(objectPtr);
+                                            }
+                                        }
                                     }
+                                    property->SetArray(papyrusArray);
                                 } else {
-                                    Log("Property (Form?) could not be found: {}", propertyValue.PropertyValueText);
+                                    auto *form = LookupForm(propertyValue.PropertyValueText);
+                                    if (form) {
+                                        auto typeName = propertyType->PropertyScriptName;
+                                        RE::VMHandle handle = handlePolicy->GetHandleForObject(
+                                                form->GetFormType(), form);
+                                        if (typeName.empty()) {
+                                            Log("Could not get a type name for property {}", propertyName);
+                                        } else {
+                                            RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+                                            vm->CreateObject(typeName, objectPtr);
+                                            auto *bindPolicy = vm->GetObjectBindPolicy();
+                                            bindPolicy->BindObject(objectPtr, handle);
+                                            property->SetObject(objectPtr);
+                                        }
+                                    }
                                 }
                                 break;
+                            }
                         }
+                    } else {
+                        Log("Property (Form?) could not be found: {}", propertyValue.PropertyValueText);
                     }
                 }
-            } catch (...) {
-                Log("Error setting property {}", propertyName.c_str());
-            }
+        } catch (...) {
+            Log("Error setting property {}", propertyName.c_str());
         }
     }
+}
 
-    void BindToForm(std::string scriptName, const RE::TESForm& form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
-        // Gross! Move this to a BindingDefinition field! Such hack.
+void BindToForm(std::string scriptName, const RE::TESForm& form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
+    // Gross! Move this to a BindingDefinition field! Such hack.
         bool autoFillProperties = true;
         if (scriptName.starts_with('!')) {
             autoFillProperties = false;
