@@ -7,7 +7,7 @@
 
 # Today!
 
-- [ ] Properties can be set for all types!
+- [x] Properties can be set for all types!
   - [x] String
   - [x] Int
   - [x] Float
@@ -20,11 +20,12 @@
   - [x] Array of Int
   - [x] Array of Float
   - [x] Array of Bool
-  - [ ] Array of forms
-    - [ ] Using multiple Editor IDs
-    - [ ] Using Editor ID matcher (gets all matches)
-    - [ ] Using Form ID
-    - [ ] Using Form ID and plugin name
+  - [x] Array of forms
+    - [x] Using multiple Editor IDs
+    - [x] Using Editor ID matcher (gets all matches)
+    - [x] Using Form ID
+    - [x] Using Form ID and plugin name
+- [ ] Can provide the name of a form type, e.g. `BOOK`
 
 # 1.0.0
 
@@ -68,7 +69,6 @@ Project Stuff:
 Features:
 - [x] Process every reference in the game on game load
   - [x] Capture Main Menu visit or leave
-- [ ] Can provide the name of a form type, e.g. `BOOK`
 - [x] Papyrus function which will process every form in the game for script attachment
 - [x] Papyrus function which will process every object near the player or an object or a point in space
 - [x] .ini config for searching nearby on a regular basis
