@@ -1,40 +1,3 @@
-# Tonight!
-
-- [x] Make test suite run plz k thx
-- [x] Parse the examples added, plz k thx, like make them go!
-- [x] Raid :)
-- [x] Hook it up to Skyrim
-
-# Yesterday!
-
-- [x] Properties can be set for all types!
-  - [x] String
-  - [x] Int
-  - [x] Float
-  - [x] Bool
-  - [x] Single Form
-    - [x] Using Editor ID
-    - [x] Using Form ID
-    - [x] Using Form ID and plugin name
-  - [x] Array of String
-  - [x] Array of Int
-  - [x] Array of Float
-  - [x] Array of Bool
-  - [x] Array of forms
-    - [x] Using multiple Editor IDs
-    - [x] Using Editor ID matcher (gets all matches)
-    - [x] Using Form ID
-    - [x] Using Form ID and plugin name
-
-# Today!
-
-- [ ] Can provide the name of a form type, e.g. `BOOK`
-  - [x] Can parse form types given human readable names
-  - [ ] Can attach script to everything of a given form type
-- [ ] Can provide form type AND editor ID matcher
-- [ ] Can provide Form NAME matcher
-- [ ] Can provide Form NAME matcher with form type
-
 # 1.0.0
 
 - [x] Bind to references by 0x0 reference form ID (once per script)
@@ -72,7 +35,6 @@ Project Stuff:
 - [x] CMake cleaned up and working for all Skyrim versions WITHOUT a local vcpkg! Or with just one!
 - [x] Compiled OK in VSCode for all 3 Skyrim Versions
 - [x] .bat files for compiling any version
-- [ ] Document configurable folder output for .dll and scripts
 
 Features:
 - [x] Process every reference in the game on game load
@@ -81,22 +43,45 @@ Features:
 - [x] Papyrus function which will process every object near the player or an object or a point in space
 - [x] .ini config for searching nearby on a regular basis
 
-# Config:
+Config:
 - [x] Add .ini file support
   - [x] .ini - Can toggle console logs on and off
   - [x] .ini - Can disable on load object reference search
 
-# Logs:
-- [x] Add a .log file specifically for no-esp (rewrite with each game rerun) 
+Logs:
+- [x] Add a .log file specifically for no-esp (rewrite with each game rerun)
 
-# Property Setting:
-- [ ] Try getting property types FROM OBJECTS rather than the raw type <---
-- [ ] Can you list properties from the Main Menu? NO - CANNOT GET TYPES!
-  - [ ] What if not loaded, can you Process via linker from that context?
-  - [ ] Goal: eager loading of property types to not do checking at runtime
-- [ ] Support setting property values in-line for simple literal values and anything based on an editor ID or formID/esp pair
+Other:
+- [x] Make test suite run plz k thx
+- [x] Parse the examples added, plz k thx, like make them go!
+- [x] Hook it up to Skyrim
+- [x] Properties can be set for all types!
+  - [x] String
+  - [x] Int
+  - [x] Float
+  - [x] Bool
+  - [x] Single Form
+    - [x] Using Editor ID
+    - [x] Using Form ID
+    - [x] Using Form ID and plugin name
+  - [x] Array of String
+  - [x] Array of Int
+  - [x] Array of Float
+  - [x] Array of Bool
+  - [x] Array of forms
+    - [x] Using multiple Editor IDs
+    - [x] Using Editor ID matcher (gets all matches)
+    - [x] Using Form ID
+    - [x] Using Form ID and plugin name
+- [x] Can provide the name of a form type, e.g. `BOOK`
+  - [x] Can parse form types given human readable names
+  - [x] Can attach script to everything of a given form type
+- [x] Can provide form type AND editor ID matcher
+- [x] Can provide Form NAME matcher
+- [x] Can provide Form NAME matcher with form type
 
 ## Soon:
+- [ ] Document configurable folder output for .dll and scripts
 - [ ] Refactor System into files that make sense!
 
 ## Later:
