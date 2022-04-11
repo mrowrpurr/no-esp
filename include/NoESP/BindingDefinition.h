@@ -8,7 +8,7 @@
 
 namespace NoESP {
 
-    enum BindingDefinitionType { EditorID, FormID, Invalid };
+    enum BindingDefinitionType { EditorID, FormID, FormType, Invalid };
     enum EditorIdMatcherType { Exact, PrefixMatch, SuffixMatch, PrefixAndSuffixMatch, RegularExpression, None };
 
     // Note: this can be removed and switch back to using the direct raw type. No longer using unit tests... :'(

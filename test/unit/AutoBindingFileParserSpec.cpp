@@ -143,5 +143,15 @@ go_bandit([](){
             AssertThat(def.FormTypes, Contains(RE::FormType::Weapon));
             AssertThat(def.FormTypes, Contains(RE::FormType::Armor));
         });
+        it("Kaboom [Book] TheExplosion=ExplosionShockMass01", [&](){
+            auto def = NoESP::AutoBindingsFile::ParseLine(R"(Kaboom [Book] TheExplosion=ExplosionShockMass01)");
+
+            AssertThat(def.ScriptName, Equals("Kaboom"));
+            AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
+            AssertThat(def.FormID, Equals(20)); // The player
+            AssertThat(def.FormTypes.size(), Equals(2));
+            AssertThat(def.FormTypes, Contains(RE::FormType::Weapon));
+            AssertThat(def.FormTypes, Contains(RE::FormType::Armor));
+        });
     });
 });

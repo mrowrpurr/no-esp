@@ -174,6 +174,7 @@ namespace NoESP::AutoBindingsFile {
         {"keym", RE::FormType::KeyMaster},
         {"keymaster", RE::FormType::KeyMaster},
         {"alch", RE::FormType::AlchemyItem},
+        {"alchemy", RE::FormType::AlchemyItem},
         {"alchemyitem", RE::FormType::AlchemyItem},
         {"idlm", RE::FormType::IdleMarker},
         {"idlemarker", RE::FormType::IdleMarker},
@@ -391,12 +392,15 @@ namespace NoESP::AutoBindingsFile {
         BindingDefinition entry;
         entry.PropertyValues = properties;
 
+        Log("LINE (before): {}", line);
         ParseFormTypesFromLine(entry, line);
+        Log("LINE (after): {} with {} form types", line, entry.FormTypes.size());
 
         static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)", std::regex_constants::icase); // TODO - remove icase
         static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)", std::regex_constants::icase);
         static auto scriptNameWithEditorID = std::regex(R"(^\s*([^\s]+)\s+([^\s]+)\s*$)", std::regex_constants::icase);
         static auto scriptNameOnly = std::regex(R"(^\s*([^\s]+)\s*$)", std::regex_constants::icase);
+        static auto scriptName = std::regex(R"(^\s*([^\s]+)\s*)", std::regex_constants::icase);
         std::smatch matches;
         try {
             if (std::regex_search(line, matches, scriptNameWithPluginFormID)) {
@@ -418,6 +422,10 @@ namespace NoESP::AutoBindingsFile {
                 entry.Type = BindingDefinitionType::EditorID;
                 entry.ScriptName = matches[1].str();
                 entry.EditorIdMatcher = ParseEditorIdMatchText(matches[2].str());
+            } else if (! entry.FormTypes.empty() && std::regex_search(line, matches, scriptName)) {
+                Log("Got an entry for form types...");
+                entry.Type = BindingDefinitionType::FormType;
+                entry.ScriptName = matches[1].str();
             } else if (std::regex_search(line, matches, scriptNameOnly)) {
                 entry.Type = BindingDefinitionType::FormID;
                 entry.ScriptName = matches[1].str();
@@ -464,19 +472,21 @@ namespace NoESP::AutoBindingsFile {
                                 else line = line.substr(0, commentStartIndex);
                             }
 
-                            // Parse the (trimmed) line
-                            try {
-                                auto entry = ParseLine(line);
-                                if (entry.Type != BindingDefinitionType::Invalid) {
-                                    entry.Filename = file.path().string();
-                                    try {
-                                        entryCallback(entry);
-                                    } catch (...) {
-                                        Log("[Internal] AutoBinding entry discovery callback failed for '{}'", line);
+                            if (! line.empty()) {
+                                // Parse the (trimmed) line
+                                try {
+                                    auto entry = ParseLine(line);
+                                    if (entry.Type != BindingDefinitionType::Invalid) {
+                                        entry.Filename = file.path().string();
+                                        try {
+                                            entryCallback(entry);
+                                        } catch (...) {
+                                            Log("[Internal] AutoBinding entry discovery callback failed for '{}'", line);
+                                        }
                                     }
+                                } catch (...) {
+                                    Log("Failed to parse entry line '{}'", line);
                                 }
-                            } catch (...) {
-                                Log("Failed to parse entry line '{}'", line);
                             }
                         }
                     }

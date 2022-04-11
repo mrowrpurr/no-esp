@@ -270,61 +270,61 @@ namespace NoESP::PapyrusScriptBindings {
     }
 }
 
-void BindToForm(std::string scriptName, const RE::TESForm& form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
-    // Gross! Move this to a BindingDefinition field! Such hack.
-        bool autoFillProperties = true;
-        if (scriptName.starts_with('!')) {
-            autoFillProperties = false;
-            scriptName = scriptName.substr(1); // Remove '!'
-        }
+    void BindToForm(std::string scriptName, const RE::TESForm& form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
+        // Gross! Move this to a BindingDefinition field! Such hack.
+            bool autoFillProperties = true;
+            if (scriptName.starts_with('!')) {
+                                                 autoFillProperties = false;
+                                                 scriptName = scriptName.substr(1); // Remove '!'
+                                                 }
 
-        try {
-            auto* vm = VirtualMachine::GetSingleton();
-            auto* handlePolicy = vm->GetObjectHandlePolicy();
-            RE::VMHandle handle = handlePolicy->GetHandleForObject(form.GetFormType(), (RE::TESForm*) &form);
-            if (handle) {
+            try {
+                    auto* vm = VirtualMachine::GetSingleton();
+                    auto* handlePolicy = vm->GetObjectHandlePolicy();
+                    RE::VMHandle handle = handlePolicy->GetHandleForObject(form.GetFormType(), (RE::TESForm*) &form);
+                    if (handle) {
 
-                // If there is already a script with the same name attached to this object, don't bind a new one
-                RE::BSFixedString caseInsensitiveScriptName = scriptName;
-                if (addOnce) {
+                    // If there is already a script with the same name attached to this object, don't bind a new one
+                    RE::BSFixedString caseInsensitiveScriptName = scriptName;
+                    if (addOnce) {
                     if (vm->attachedScripts.contains(handle)) {
-                        for (auto& attachedScript : vm->attachedScripts.find(handle)->second) {
-                            if (attachedScript->GetTypeInfo()->GetName() == caseInsensitiveScriptName) {
-                                Log("{} already attached to 0x{:x}, skipping", scriptName, form.formID);
-                                return; // Don't bind! Already bound!
-                            }
-                        }
+                    for (auto& attachedScript : vm->attachedScripts.find(handle)->second) {
+                    if (attachedScript->GetTypeInfo()->GetName() == caseInsensitiveScriptName) {
+                    Log("{} already attached to 0x{:x}, skipping", scriptName, form.formID);
+                    return; // Don't bind! Already bound!
                     }
-                }
+                    }
+                    }
+                    }
 
-                RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
-                vm->CreateObject(scriptName, objectPtr);
-                auto* bindPolicy = vm->GetObjectBindPolicy();
+                    RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
+                    vm->CreateObject(scriptName, objectPtr);
+                    auto* bindPolicy = vm->GetObjectBindPolicy();
 
-                if (autoFillProperties) AutoFillProperties(objectPtr, propertiesToSet);
-                SetProperties(scriptName, objectPtr, propertiesToSet);
+                    if (autoFillProperties) AutoFillProperties(objectPtr, propertiesToSet);
+                    SetProperties(scriptName, objectPtr, propertiesToSet);
 
-                try {
+                    try {
                     bindPolicy->BindObject(objectPtr, handle);
-                } catch (...) {
+                    } catch (...) {
                     Log("Failed to bind object to handle for '{}'", scriptName);
                     return;
-                }
+                    }
 
-                auto* ref = form.AsReference();
-                if (ref) {
+                    auto* ref = form.AsReference();
+                    if (ref) {
                     auto* baseForm = ref->GetBaseObject();
                     Log("Bound script '{}' to reference '{}' 0x{:x} (base '{}' 0x{:x})!", scriptName, form.GetName(), form.formID, baseForm->GetName(), baseForm->formID);
-                } else {
+                    } else {
                     Log("Bound script '{}' to form '{}' 0x{:x}!", scriptName, form.GetName(), form.formID);
-                }
-            } else {
-                Log("Error getting handle for script {} to reference", scriptName);
-            }
-        } catch (...) {
-            Log("Error binding script {} to reference", scriptName);
+                    }
+                    } else {
+                    Log("Error getting handle for script {} to reference", scriptName);
+                    }
+                    } catch (...) {
+                                      Log("Error binding script {} to reference", scriptName);
+                                      }
         }
-    }
 
     void BindToFormPointer(std::string scriptName, RE::TESForm* form, FormPropertyMap& propertiesToSet, bool addOnce = false) {
         if (! form) return;
@@ -412,22 +412,6 @@ void BindToForm(std::string scriptName, const RE::TESForm& form, FormPropertyMap
                 }
             } else {
                 Log("Could not find plugin '{}' for script '{}'", optionalPluginFile, scriptName);
-            }
-        }
-    }
-
-    void Bind(BindingDefinition& def) {
-        try {
-            if (def.Type == BindingDefinitionType::EditorID && def.EditorIdMatcher.Type == EditorIdMatcherType::Exact) {
-                BindToEditorId(def.ScriptName, def.EditorIdMatcher.Text, def.PropertyValues, def.AddOnce);
-            } else if (def.Type == BindingDefinitionType::FormID) {
-                BindToFormId(def.ScriptName, def.FormID, def.PropertyValues, def.Plugin, def.AddOnce);
-            }
-        } catch (...) {
-            if (def.Filename.empty()) {
-                Log("Bind() error {} {} to {}", def.EditorIdMatcher.Text, def.FormID, def.ScriptName);
-            } else {
-                Log("Bind() error {}", def.Filename);
             }
         }
     }
