@@ -45,7 +45,9 @@ namespace NoESP::AutoBindingsFile {
             matcher.Text = editorId.substr(0, editorId.length() - 1);
         } else if (editorId.starts_with('/') && editorId.ends_with('/') && editorId.length() > 2) {
             matcher.Type = EditorIdMatcherType::RegularExpression;
-            matcher.RegularExpression = std::regex(editorId.substr(1, editorId.length() - 2), std::regex_constants::icase);
+            auto regularExpressionText = editorId.substr(1, editorId.length() - 2);
+            matcher.Text = regularExpressionText;
+            matcher.RegularExpression = std::regex(regularExpressionText, std::regex_constants::icase);
         } else {
             matcher.Type = EditorIdMatcherType::Exact;
             matcher.Text = editorId;
@@ -392,9 +394,7 @@ namespace NoESP::AutoBindingsFile {
         BindingDefinition entry;
         entry.PropertyValues = properties;
 
-        Log("LINE (before): {}", line);
         ParseFormTypesFromLine(entry, line);
-        Log("LINE (after): {} with {} form types", line, entry.FormTypes.size());
 
         static auto scriptNameWithPluginFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s+([^\s]+)\s*$)", std::regex_constants::icase); // TODO - remove icase
         static auto scriptNameWithSkyrimFormID = std::regex(R"(^\s*([^\s]+)\s+0x([^\s]+)\s*$)", std::regex_constants::icase);
@@ -423,7 +423,6 @@ namespace NoESP::AutoBindingsFile {
                 entry.ScriptName = matches[1].str();
                 entry.EditorIdMatcher = ParseEditorIdMatchText(matches[2].str());
             } else if (! entry.FormTypes.empty() && std::regex_search(line, matches, scriptName)) {
-                Log("Got an entry for form types...");
                 entry.Type = BindingDefinitionType::FormType;
                 entry.ScriptName = matches[1].str();
             } else if (std::regex_search(line, matches, scriptNameOnly)) {
