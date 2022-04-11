@@ -166,6 +166,7 @@ namespace NoESP::AutoBindingsFile {
         {"furniture", RE::FormType::Furniture},
         {"weap", RE::FormType::Weapon},
         {"weapon", RE::FormType::Weapon},
+        {"weapons", RE::FormType::Weapon},
         {"ammo", RE::FormType::Ammo},
         {"npc_", RE::FormType::NPC},
         {"npc", RE::FormType::NPC},
@@ -355,7 +356,6 @@ namespace NoESP::AutoBindingsFile {
         {"volumetriclighting", RE::FormType::VolumetricLighting}
     }};
 
-
     void ParseFormTypesFromLine(BindingDefinition& def, std::string& line) {
         static auto formTypesPattern = std::regex(R"(^\s*([^\s]+)\s+\[([^\]]+)\])");
         static auto justTheTypesInTheBrackets = std::regex(R"(\s+\[([^\]]+)\]\s*)");
@@ -363,7 +363,7 @@ namespace NoESP::AutoBindingsFile {
         std::smatch matches;
         if (std::regex_search(line, matches, formTypesPattern) && std::regex_search(line, matches, justTheTypesInTheBrackets)) {
             auto formTypeNames = Utilities::ToLowerCase(matches[1].str());
-            line = line.substr(0, matches.position()) + line.substr(matches.position() + matches.length());
+            line = line.substr(0, matches.position()) + " " + line.substr(matches.position() + matches.length()) + " ";
             auto index = formTypeNames.find('|');
             while (index != std::string::npos) {
                 auto formTypeName = formTypeNames.substr(0, index);
