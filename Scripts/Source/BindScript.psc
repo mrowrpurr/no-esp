@@ -5,22 +5,18 @@ scriptName BindScript hidden
 function _vscode_hack()
 endFunction
 
-function ToForm(string theScriptName, Form theForm, bool addOnce = false) global native
-{If you set the `addOnce` argument to `true`, the script will _only_ be attached to the form
-if another script with the same name is not _already_ attached.
-    
-By default, `BindScript.ToForm()` will add _multiple_ instances of the provided script to the given form.}
+bool function Bind(string scriptName, string expression) global native
 
-function ToEditorId(string theScriptName, string editorId, bool addOnce = false) global native
-{If you set the `addOnce` argument to `true`, the script will _only_ be attached to the form
-if another script with the same name is not _already_ attached.
-    
-By default, `BindScript.ToForm()` will add _multiple_ instances of the provided script to the given form (if found by editor ID).}
+bool function ToKeyword(string scriptName, Keyword theKeyword, string properties = "") global native
 
-function SearchObjectsInRadius(float radius, ObjectReference center = None) global native
-{Iterate over every Object Reference within the provided radius and attach script(s) when necessary.
+bool function ToFormType(string scriptName, string name = "", int id = 0, string properties = "")
 
-By default, the center point is the Player, but you can provide your own Object Reference to be used as a center point for the search.}
+bool function ToForm(string scriptName, Form baseForm, string properties = "") global native
 
-function SearchAllObjects() global native
-{Iterate over every single loaded Object Reference in the game and attach script(s) when necessary.}
+bool function ToObject(string scriptName, ObjectReference ref, string properties = "") global native
+
+; TODO - can we attach to aliases?
+bool function ToAlias(string scriptName, Alias theAlias, string properties = "") global native
+
+; TODO - can we attach to active magic effects?
+bool function ToActiveMagicEffect(string scriptName, ActiveMagicEffect ame, string properties = "") global native
