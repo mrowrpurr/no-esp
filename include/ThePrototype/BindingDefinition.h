@@ -6,7 +6,7 @@
 
 #include "Utilities.h"
 
-namespace NoESP {
+namespace ThePrototype {
 
     enum BindingDefinitionType { EditorID, FormID, FormType, Invalid };
     enum EditorIdMatcherType { Exact, PrefixMatch, SuffixMatch, PrefixAndSuffixMatch, RegularExpression, None };

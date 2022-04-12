@@ -6,7 +6,7 @@
 
 #include "Config.h"
 
-namespace NoESP {
+namespace ThePrototype {
 
     namespace Logging {
         void Initialize() {
@@ -32,8 +32,8 @@ namespace NoESP {
     template <class... Types>
     void Log(const std::string text, const Types&... args) {
         SKSE::log::info(std::format(text, args...));
-        if (NoESP::Config::LogToConsole) {
-            RE::ConsoleLog::GetSingleton()->Print(std::format(std::format("[NoESP] {}", text), args...).c_str());
+        if (ThePrototype::Config::LogToConsole) {
+            RE::ConsoleLog::GetSingleton()->Print(std::format(std::format("[ThePrototype] {}", text), args...).c_str());
         }
     };
 }

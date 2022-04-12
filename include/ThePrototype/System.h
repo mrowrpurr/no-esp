@@ -33,7 +33,7 @@ using namespace RE::BSScript::Internal;
 
 // I want this file under like 50 LOC plz.
 
-namespace NoESP {
+namespace ThePrototype {
 
     // Move this into its own file :)
     // From Base Object Swapper:

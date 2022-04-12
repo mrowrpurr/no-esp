@@ -4,7 +4,7 @@
 
 #include "PapyrusScriptBindings.h"
 
-namespace NoESP::PapyrusInterface {
+namespace ThePrototype::PapyrusInterface {
 
     void BindScript_ToForm(RE::StaticFunctionTag*, std::string scriptName, RE::TESForm* form, bool addOnce = false) {
         if (!System::GetSingleton().TryLinkScript(scriptName)) return;

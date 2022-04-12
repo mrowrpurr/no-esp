@@ -3,7 +3,7 @@
 #include <string>
 #include <algorithm>
 
-namespace NoESP::Utilities {
+namespace ThePrototype::Utilities {
 
     std::string ToLowerCase(const std::string& text) {
         std::string copy{text};

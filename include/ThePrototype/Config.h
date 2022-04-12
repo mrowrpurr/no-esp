@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <SimpleIni.h>
 
-namespace NoESP::Config {
+namespace ThePrototype::Config {
     bool LogToConsole = false;
     bool SearchObjectReferencesOnStart = true;
     bool LogObjectSearch = false;

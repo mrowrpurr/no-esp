@@ -3,7 +3,7 @@
 using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
 
-namespace NoESP {
+namespace ThePrototype {
 
     struct ScriptPropertyType {
         std::optional<TypeInfo::RawType> RawType = TypeInfo::RawType::kNone;

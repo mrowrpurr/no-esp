@@ -3,10 +3,10 @@
 #include <REL/Relocation.h>
 #include <SKSE/SKSE.h>
 
-#include "NoESP/Log.h"
-#include "NoESP/Config.h"
-#include "NoESP/System.h"
-#include "NoESP/PapyrusInterface.h"
+#include "ThePrototype/Log.h"
+#include "ThePrototype/Config.h"
+#include "ThePrototype/System.h"
+#include "ThePrototype/PapyrusInterface.h"
 
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* skse) {
     SKSE::Init(skse);
@@ -17,7 +17,7 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
                 auto& system = System::GetSingleton();
                 while (true) {
                     if (system.IsLoaded()) {
-                        if (NoESP::Config::LogObjectSearch) {
+                        if (ThePrototype::Config::LogObjectSearch) {
                             Log("Search for objects! Search thread #{} Radius:{} IntervalMs:{}", searchIndex, radius, interval);
                         }
                         System::CheckForObjectsToAttachScriptsToForObjectsInRangeOfPlayer(radius);
@@ -26,7 +26,7 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
                 }
             });
             System::Load();
-            SKSE::GetPapyrusInterface()->Register(NoESP::PapyrusInterface::BIND);
+            SKSE::GetPapyrusInterface()->Register(ThePrototype::PapyrusInterface::BIND);
         } else if (message->type == SKSE::MessagingInterface::kNewGame || message->type == SKSE::MessagingInterface::kPostLoadGame) {
             auto& system = System::GetSingleton();
             if (! system.IsLoadedOrSetLoaded()) {
@@ -46,7 +46,7 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadIn
 
 extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface*, SKSE::PluginInfo* info) {
     info->infoVersion = SKSE::PluginInfo::kVersion;
-    info->name = "NoESP";
+    info->name = "ThePrototype";
     info->version = 1;
     return true;
 }
@@ -54,7 +54,7 @@ extern "C" __declspec(dllexport) bool SKSEAPI SKSEPlugin_Query(const SKSE::Query
 #ifdef SKYRIM_AE
 extern "C" __declspec(dllexport) constinit auto SKSEPlugin_Version = [](){
     SKSE::PluginVersionData version;
-    version.PluginName("NoESP");
+    version.PluginName("ThePrototype");
     version.PluginVersion({ 0, 0, 1 });
     version.CompatibleVersions({ SKSE::RUNTIME_LATEST });
     version.UsesAddressLibrary(true); // Not really necessary or is it?

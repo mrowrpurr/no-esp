@@ -12,7 +12,7 @@
 #include "BindingDefinition.h"
 #include "Utilities.h"
 
-namespace NoESP::AutoBindingsFile {
+namespace ThePrototype::AutoBindingsFile {
 
     // https://stackoverflow.com/a/40903508
     std::string ReadTextFile(const std::filesystem::path& path) {

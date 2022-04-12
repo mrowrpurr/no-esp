@@ -11,11 +11,11 @@
 #include "ScriptPropertyTypeCache.h"
 #include "Utilities.h"
 
-using namespace NoESP;
+using namespace ThePrototype;
 using namespace RE::BSScript;
 using namespace RE::BSScript::Internal;
 
-namespace NoESP::PapyrusScriptBindings {
+namespace ThePrototype::PapyrusScriptBindings {
 
     template <typename T>
     std::vector<T> GetValuesAsArray(const std::string& text, const std::function<T(const std::string&)>& itemTransformer) {
@@ -81,10 +81,10 @@ namespace NoESP::PapyrusScriptBindings {
                 Log("Problem looking up form '{}'", formAsText);
             }
         } else {
-            auto matcher = NoESP::AutoBindingsFile::ParseEditorIdMatchText(formAsText);
+            auto matcher = ThePrototype::AutoBindingsFile::ParseEditorIdMatchText(formAsText);
             const auto& [map, lock] = RE::TESForm::GetAllFormsByEditorID();
             for (auto iterator = map->begin(); iterator != map->end(); iterator++) {
-                if (NoESP::DoesEditorIdMatch(matcher, iterator->first.c_str())) {
+                if (ThePrototype::DoesEditorIdMatch(matcher, iterator->first.c_str())) {
                     forms.emplace_back(iterator->second);
                     if (returnOne) return forms;
                 }

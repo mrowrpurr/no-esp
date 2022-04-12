@@ -5,7 +5,7 @@
 
 #include <RE/M/MenuOpenCloseEvent.h>
 
-namespace NoESP {
+namespace ThePrototype {
 
     class OnMenuOpenCloseEventSink : public RE::BSTEventSink<RE::MenuOpenCloseEvent> {
         std::function<void(const RE::MenuOpenCloseEvent* event)> _eventCallback;

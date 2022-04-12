@@ -80,9 +80,20 @@ Other:
 - [x] Can provide Form NAME matcher
 - [x] Can provide Form NAME matcher with form type
 
-## Soon:
-- [ ] Document configurable folder output for .dll and scripts
+# 1.3.0
+
 - [ ] Refactor System into files that make sense!
+  - [ ] Parser
+    - [ ] In its own folder
+    - [ ] Can parse just properties easily
+    - [ ] Can parse just Editor ID
+      - [ ] Support multiple * and turn it into a regex when provided
+    - [ ] Can parse just Form Type(s)
+  - [ ] Form types are in their own file
+  - [ ] Events are in their own directory
+
+## Soon:
+- [ ] Document building the project
 
 ## Later:
 - [ ] Skyrim LE
