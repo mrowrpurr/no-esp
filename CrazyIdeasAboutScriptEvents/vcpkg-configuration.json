@@ -1,0 +1,10 @@
+{
+    "registries": [
+        {
+            "kind": "git",
+            "repository": "https://gitlab.com/colorglass/vcpkg-colorglass",
+            "baseline": "b7bdebedcdb43bf893160fcc227fa8f2da779039",
+            "packages": ["commonlibsse-ng-prebuilt"]
+        }
+    ]
+}
