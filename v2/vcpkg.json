@@ -1,0 +1,11 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "sample-plugin",
+    "version-string": "0.0.1",
+    "dependencies": [
+        "commonlibsse-ng-prebuilt",
+        "bandit",
+        "snowhouse",
+        "spdlog"
+    ]
+}
