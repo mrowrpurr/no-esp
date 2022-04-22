@@ -2,12 +2,12 @@
 
 #include <span>
 
-#include <NoESP/Expression.h>
+#include <NoESP/Expressions.h>
 
 namespace NoESP {
     class Parser {
     public:
-        static std::span<Expression> Parse(const std::string& text) {
+        static std::span<ExpressionInfo> Parse(const std::string&) {
             return {};
         }
     };

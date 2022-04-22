@@ -10,17 +10,21 @@ go_bandit([](){
 
             auto expression = expressions[0];
             AssertThat(expression.Type, Equals(NoESP::ExpressionType::BindScript));
-            AssertThat(expression.ScriptName, Equals("ScriptName"));
+            AssertThat(expression.BindScriptInfo.ScriptName, Equals("ScriptName"));
 
             expressions = NoESP::Parser::Parse("DifferentScriptName");
 
             AssertThat(expression.Type, Equals(NoESP::ExpressionType::BindScript));
             AssertThat(expression.ScriptName, Equals("DifferentScriptName"));
+            AssertThat(expression.FunctionName, IsEmpty());
         });
-        xit("ScriptName *selector*", [&](){ });
+        it("ScriptName *selector*", [&](){
+
+        });
         xit("ScriptName [type]:*selector*", [&](){ });
-        xit("ScriptName.FunctionName", [&](){ });
-        xit("ScriptName.FunctionName *selector*", [&](){ });
-        xit("OnHit Source=[Spell]:*Fire* ScriptName.FunctionName", [&](){ });
+        xit("ScriptName FunctionName", [&](){ });
+        xit("ScriptName *selector*", [&](){ });
+        xit("OnHit Source=[Spell]:*Fire* ScriptName.FunctionName Arg1=69", [&](){ });
+        xit("AddItem Item=FoodSweetRoll Count=69 ScriptName.FunctionName Arg1=69", [&](){ });
     });
 });
