@@ -11,7 +11,7 @@ namespace NoESP::Expressions {
     };
 
     struct BindScriptInfo {
-        // std::string ScriptName;
+        std::string ScriptName;
     };
 
     struct EventHandlerInfo {

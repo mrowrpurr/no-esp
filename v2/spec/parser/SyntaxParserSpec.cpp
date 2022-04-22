@@ -8,15 +8,14 @@ go_bandit([](){
             auto expressions = NoESP::Parser::Parse("ScriptName");
             AssertThat(expressions.size(), Equals(1));
 
-            auto expression = expressions[0];
-            AssertThat(expression.Type, Equals(NoESP::ExpressionType::BindScript));
+            auto& expression = expressions[0];
+            AssertThat(expression.Type, Equals(ExpressionType::BindScript));
             AssertThat(expression.BindScriptInfo.ScriptName, Equals("ScriptName"));
 
             expressions = NoESP::Parser::Parse("DifferentScriptName");
 
-            AssertThat(expression.Type, Equals(NoESP::ExpressionType::BindScript));
-            AssertThat(expression.ScriptName, Equals("DifferentScriptName"));
-            AssertThat(expression.FunctionName, IsEmpty());
+            AssertThat(expression.Type, Equals(ExpressionType::BindScript));
+            AssertThat(expression.BindScriptInfo.ScriptName, Equals("DifferentScriptName"));
         });
         it("ScriptName *selector*", [&](){
 
