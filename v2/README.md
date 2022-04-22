@@ -8,7 +8,8 @@ ActionName [Argments...]
 
 ... AND WICKED BADASS PAPYRUS FUNCTIONS
 
-# -------------------------------
+Examples:
 
+OnKeyPress Key=G Shift=True MyScript.CoolFunction 
 OnHit Source=[Spell]:*Fire* Target=PlayerRef MyScript.MyFunction
 ```
