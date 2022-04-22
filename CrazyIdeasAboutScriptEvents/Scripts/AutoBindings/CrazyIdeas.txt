@@ -1,1 +1,5 @@
-InitializeMe
+ScriptName [Properties...]
+FunctionName [Arguments...]
+ScriptName *Selector*
+EventName [Event Conditions] FunctionName [Arguments...]
+ActionName [Argments...]
