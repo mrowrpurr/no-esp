@@ -2,8 +2,7 @@
 
 ```
 FunctionName [Arguments...]
-ScriptName [Properties...]
-ScriptName *Selector* [Properties...]
+ScriptName [*Selector*] [Properties...]
 EventName [Event Conditions] FunctionName [Arguments...]
 ActionName [Argments...]
 
