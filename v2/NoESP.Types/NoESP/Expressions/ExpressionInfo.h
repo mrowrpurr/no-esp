@@ -4,7 +4,7 @@
 
 namespace NoESP::Expressions {
     
-    enum ExpressionType { Action, BindScript, EventHandler, FunctionCall, Unset };
+    enum ExpressionType { Action, BindScript = 69, EventHandler, FunctionCall, Unset = -1 };
 
     struct ActionInfo {
 

@@ -7,12 +7,14 @@ go_bandit([](){
         it("ScriptName", [&](){
             auto expressions = NoESP::Parser::Parse("ScriptName");
             AssertThat(expressions.size(), Equals(1));
-
-            auto& expression = expressions[0];
+            auto expression = expressions[0];
+            
             AssertThat(expression.Type, Equals(ExpressionType::BindScript));
             AssertThat(expression.BindScriptInfo.ScriptName, Equals("ScriptName"));
 
             expressions = NoESP::Parser::Parse("DifferentScriptName");
+            AssertThat(expressions.size(), Equals(1));
+            expression = expressions[0];
 
             AssertThat(expression.Type, Equals(ExpressionType::BindScript));
             AssertThat(expression.BindScriptInfo.ScriptName, Equals("DifferentScriptName"));
