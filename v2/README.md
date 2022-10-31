@@ -1,10 +1,14 @@
 # `No .esp`
 
+- How can we distinguish between the below argument signatures or whatever?
+
+- And how can we try to keep things happening inside of Skyrim? :) But with TDD!
+
 ```
-FunctionName [Arguments...]
-ScriptName [*Selector*] [Properties...]
+Call ScriptName.FunctionName [Arguments...]
+Bind ScriptName [*Selector*] [Properties...]
 EventName [Event Conditions] FunctionName [Arguments...]
-ActionName [Argments...]
+ActionName [Argments...] [Function||Script w/ arguments]
 
 ... AND WICKED BADASS PAPYRUS FUNCTIONS
 

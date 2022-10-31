@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "span": "cpp"
+        "span": "cpp",
+        "vector": "cpp"
     }
 }
