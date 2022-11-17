@@ -1,12 +1,5 @@
 #pragma once
 
-#pragma warning(push)
-#include <SKSE/SKSE.h>
-#include <RE/Skyrim.h>
-#include <RE/T/TESForm.h>
-#include <RE/T/TESObjectREFR.h>
-#pragma warning(pop)
-
 #include "BindingDefinition.h"
 #include "ScriptPropertyTypeCache.h"
 #include "Utilities.h"
@@ -67,7 +60,7 @@ namespace NoESP::PapyrusScriptBindings {
                     if (returnOne) return forms;
                 }
             } catch (...) {
-                Log("Problem looking up form '{}'", formAsText);
+                logger::info("Problem looking up form '{}'", formAsText);
             }
         } else if (std::regex_search(formAsText, matches, formIdPattern)) {
             try {
@@ -78,7 +71,7 @@ namespace NoESP::PapyrusScriptBindings {
                     if (returnOne) return forms;
                 }
             } catch (...) {
-                Log("Problem looking up form '{}'", formAsText);
+                logger::info("Problem looking up form '{}'", formAsText);
             }
         } else {
             auto matcher = NoESP::AutoBindingsFile::ParseEditorIdMatchText(formAsText);
@@ -107,14 +100,14 @@ namespace NoESP::PapyrusScriptBindings {
             if (! form) return;
 
             if (manuallyConfiguredProperties.contains(Utilities::ToLowerCase(propertyName.c_str()))) {
-                Log("Not using autofill for property {} because it is manually configured", propertyName.c_str());
+                logger::info("Not using autofill for property {} because it is manually configured", propertyName.c_str());
                 continue;
             }
 
             auto rawType = properties[i].info.type.GetRawType();
             auto rawTypeId = (size_t) rawType;
             if (rawType == TypeInfo::RawType::kArraysEnd || (rawTypeId >= 0 && rawTypeId <= 15)) {
-                Log("Property is primitive type, cannot be auto filled {}", propertyName.c_str());
+                logger::info("Property is primitive type, cannot be auto filled {}", propertyName.c_str());
                 return;
             }
 
@@ -133,7 +126,7 @@ namespace NoESP::PapyrusScriptBindings {
                     propertyVariable->SetObject(objectPtr);
                 } else {
                     // TODO - support all other property types! the primitives!
-                    Log("Autofill only supports object properties, no primitives (int, string, etc) right now...");
+                    logger::info("Autofill only supports object properties, no primitives (int, string, etc) right now...");
                 }
             }
         }
@@ -224,7 +217,7 @@ namespace NoESP::PapyrusScriptBindings {
                                             RE::VMHandle handle = handlePolicy->GetHandleForObject(
                                                     form->GetFormType(), form);
                                             if (typeName.empty()) {
-                                                Log("Could not get a type name for property {}", propertyName);
+                                                logger::info("Could not get a type name for property {}", propertyName);
                                             } else {
                                                 RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
                                                 vm->CreateObject(typeName, objectPtr);
@@ -246,7 +239,7 @@ namespace NoESP::PapyrusScriptBindings {
                                             RE::VMHandle handle = handlePolicy->GetHandleForObject(
                                                     form->GetFormType(), form);
                                             if (typeName.empty()) {
-                                                Log("Could not get a type name for property {}", propertyName);
+                                                logger::info("Could not get a type name for property {}", propertyName);
                                             } else {
                                                 RE::BSTSmartPointer<RE::BSScript::Object> objectPtr;
                                                 vm->CreateObject(typeName, objectPtr);
@@ -261,11 +254,11 @@ namespace NoESP::PapyrusScriptBindings {
                             }
                         }
                     } else {
-                        Log("Property (Form?) could not be found: {}", propertyValue.PropertyValueText);
+                        logger::info("Property (Form?) could not be found: {}", propertyValue.PropertyValueText);
                     }
                 }
         } catch (...) {
-            Log("Error setting property {}", propertyName.c_str());
+            logger::info("Error setting property {}", propertyName.c_str());
         }
     }
 }
@@ -290,7 +283,7 @@ namespace NoESP::PapyrusScriptBindings {
                     if (vm->attachedScripts.contains(handle)) {
                     for (auto& attachedScript : vm->attachedScripts.find(handle)->second) {
                     if (attachedScript->GetTypeInfo()->GetName() == caseInsensitiveScriptName) {
-                    Log("{} already attached to 0x{:x}, skipping", scriptName, form.formID);
+                    logger::info("{} already attached to 0x{:x}, skipping", scriptName, form.formID);
                     return; // Don't bind! Already bound!
                     }
                     }
@@ -307,22 +300,22 @@ namespace NoESP::PapyrusScriptBindings {
                     try {
                     bindPolicy->BindObject(objectPtr, handle);
                     } catch (...) {
-                    Log("Failed to bind object to handle for '{}'", scriptName);
+                    logger::info("Failed to bind object to handle for '{}'", scriptName);
                     return;
                     }
 
                     auto* ref = form.AsReference();
                     if (ref) {
                     auto* baseForm = ref->GetBaseObject();
-                    Log("Bound script '{}' to reference '{}' 0x{:x} (base '{}' 0x{:x})!", scriptName, form.GetName(), form.formID, baseForm->GetName(), baseForm->formID);
+                    logger::info("Bound script '{}' to reference '{}' 0x{:x} (base '{}' 0x{:x})!", scriptName, form.GetName(), form.formID, baseForm->GetName(), baseForm->formID);
                     } else {
-                    Log("Bound script '{}' to form '{}' 0x{:x}!", scriptName, form.GetName(), form.formID);
+                    logger::info("Bound script '{}' to form '{}' 0x{:x}!", scriptName, form.GetName(), form.formID);
                     }
                     } else {
-                    Log("Error getting handle for script {} to reference", scriptName);
+                    logger::info("Error getting handle for script {} to reference", scriptName);
                     }
                     } catch (...) {
-                                      Log("Error binding script {} to reference", scriptName);
+                                      logger::info("Error binding script {} to reference", scriptName);
                                       }
         }
 
@@ -348,7 +341,7 @@ namespace NoESP::PapyrusScriptBindings {
                     if (vm->attachedScripts.contains(handle)) {
                         for (auto& attachedScript : vm->attachedScripts.find(handle)->second) {
                             if (attachedScript->GetTypeInfo()->GetName() == caseInsensitiveScriptName) {
-                                Log("{} already attached to 0x{:x}, skipping", scriptName, form->formID);
+                                logger::info("{} already attached to 0x{:x}, skipping", scriptName, form->formID);
                                 return; // Don't bind! Already bound!
                             }
                         }
@@ -365,22 +358,22 @@ namespace NoESP::PapyrusScriptBindings {
                 try {
                     bindPolicy->BindObject(objectPtr, handle);
                 } catch (...) {
-                    Log("Failed to bind object to handle for '{}'", scriptName);
+                    logger::info("Failed to bind object to handle for '{}'", scriptName);
                     return;
                 }
 
                 auto* ref = form->AsReference();
                 if (ref) {
                     auto* baseForm = ref->GetBaseObject();
-                    Log("Bound script '{}' to reference '{}' 0x{:x} (base '{}' 0x{:x})!", scriptName, form->GetName(), form->formID, baseForm->GetName(), baseForm->formID);
+                    logger::info("Bound script '{}' to reference '{}' 0x{:x} (base '{}' 0x{:x})!", scriptName, form->GetName(), form->formID, baseForm->GetName(), baseForm->formID);
                 } else {
-                    Log("Bound script '{}' to form '{}' 0x{:x}!", scriptName, form->GetName(), form->formID);
+                    logger::info("Bound script '{}' to form '{}' 0x{:x}!", scriptName, form->GetName(), form->formID);
                 }
             } else {
-                Log("Error getting handle for script {} to reference", scriptName);
+                logger::info("Error getting handle for script {} to reference", scriptName);
             }
         } catch (...) {
-            Log("Error binding script {} to reference", scriptName);
+            logger::info("Error binding script {} to reference", scriptName);
         }
     }
 
@@ -389,7 +382,7 @@ namespace NoESP::PapyrusScriptBindings {
         if (form) {
             BindToFormPointer(scriptName, form, propertiesToSet, addOnce);
         } else {
-            Log("Could not find Form via Editor ID: '{}' for script '{}'", editorId, scriptName);
+            logger::info("Could not find Form via Editor ID: '{}' for script '{}'", editorId, scriptName);
         }
     }
 
@@ -399,7 +392,7 @@ namespace NoESP::PapyrusScriptBindings {
             if (form) {
                 BindToFormPointer(scriptName, form, propertiesToSet, addOnce);
             } else {
-                Log("Could not find Form via Form ID: '{}' for script '{}'", formId, scriptName);
+                logger::info("Could not find Form via Form ID: '{}' for script '{}'", formId, scriptName);
             }
         } else {
             auto* dataHandler = RE::TESDataHandler::GetSingleton();
@@ -408,10 +401,10 @@ namespace NoESP::PapyrusScriptBindings {
                 if (form) {
                     BindToFormPointer(scriptName, form, propertiesToSet, addOnce);
                 } else {
-                    Log("Could not find Form via Form ID: '{}' in plugin '{}' for script '{}'", formId, optionalPluginFile, scriptName);
+                    logger::info("Could not find Form via Form ID: '{}' in plugin '{}' for script '{}'", formId, optionalPluginFile, scriptName);
                 }
             } else {
-                Log("Could not find plugin '{}' for script '{}'", optionalPluginFile, scriptName);
+                logger::info("Could not find plugin '{}' for script '{}'", optionalPluginFile, scriptName);
             }
         }
     }

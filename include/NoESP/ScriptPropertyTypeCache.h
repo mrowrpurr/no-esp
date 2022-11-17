@@ -31,7 +31,7 @@ namespace NoESP {
 
             if (! _scriptPropertyTypes.contains(lowerScriptName)) {
                 std::unordered_map<std::string, ScriptPropertyType> propertyTypes;
-                Log("Caching all properties for script {}", scriptName);
+                logger::info("Caching all properties for script {}", scriptName);
                 try {
                     auto* vm = VirtualMachine::GetSingleton();
                     RE::BSTSmartPointer<RE::BSScript::ObjectTypeInfo> objectTypeInfoPtr;
@@ -55,16 +55,16 @@ namespace NoESP {
                                         }
                                     }
                                 } catch (...) {
-                                    Log("Could not lookup type info for property {}", propertyName);
+                                    logger::info("Could not lookup type info for property {}", propertyName);
                                 }
                                 propertyTypes.insert_or_assign(Utilities::ToLowerCase(thisPropertyName.c_str()), type);
                             } catch (...) {
-                                Log("No PropertyScriptName could be looked up for {}", propertyName);
+                                logger::info("No PropertyScriptName could be looked up for {}", propertyName);
                             }
                         }
                     }
                 } catch (...) {
-                    Log("Failed to lookup/cache script property types for {} {}", scriptName, propertyName);
+                    logger::info("Failed to lookup/cache script property types for {} {}", scriptName, propertyName);
                 }
                 _scriptPropertyTypes.insert_or_assign(lowerScriptName, propertyTypes);
             }

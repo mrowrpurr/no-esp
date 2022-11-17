@@ -12,7 +12,7 @@ using namespace snowhouse;
 
 namespace NoESP {
     template <class... Types>
-    void Log(const std::string text, const Types&... args) {
+    void logger::infoconst std::string text, const Types&... args) {
          std::cout << std::format(text, args...) + "\n";
     };
 }

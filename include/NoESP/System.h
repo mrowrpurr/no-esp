@@ -6,13 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include <RE/C/ConsoleLog.h>
-#include <RE/T/TES.h>
-#include <RE/T/TESDataHandler.h>
-#include <RE/T/TESObjectREFR.h>
-#include <RE/U/UI.h>
-#include <REL/Relocation.h>
-
 #include "Log.h"
 #include "AutoBindingsParser.h"
 #include "Events/OnActorLocationChangeEventSink.h"
@@ -209,7 +202,7 @@ namespace NoESP {
                     if (TryLinkScript(scriptName)) {
                         PapyrusScriptBindings::BindToFormId(scriptName, formId, bindingDefinition.PropertyValues);
                     } else {
-                        Log("Failed to link script '{}' to bind form 0x{:x} to", scriptName, formId);
+                        logger::info("Failed to link script '{}' to bind form 0x{:x} to", scriptName, formId);
                     }
                 }
             }
@@ -391,13 +384,13 @@ namespace NoESP {
         static void CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame() {
             auto& system = System::GetSingleton();
             if (system.IsLookingAtAllScriptsOrSet()) {
-                Log("Already checking every object reference in the game, skipping search.");
+                logger::info("Already checking every object reference in the game, skipping search.");
                 return;
             } else {
-                Log("Checking every object reference in the game for whether a script should be attached...");
+                logger::info("Checking every object reference in the game for whether a script should be attached...");
                 const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
-                for (auto iterator = literallyEveryFormInTheGame->begin(); iterator != literallyEveryFormInTheGame->end(); iterator++) {
-                    auto* ref = iterator->second->AsReference();
+                for (auto& [id, form] : *literallyEveryFormInTheGame) {
+                    auto* ref = form->AsReference();
                     if (ref) TryBindReferencePointer(ref);
                 }
                 system.SetLookingAtAllScripts(false);
@@ -407,7 +400,7 @@ namespace NoESP {
         static void CheckForObjectsToAttachScriptsToForObjectsInRange(RE::TESObjectREFR* center, float radius) {
             RE::TES::GetSingleton()->ForEachReferenceInRange(center, radius, [](RE::TESObjectREFR& ref){
                 TryBindReference(ref);
-                return true;
+                return RE::BSContainer::ForEachResult::kContinue;
             });
         }
 
@@ -421,13 +414,13 @@ namespace NoESP {
                 if (event->actor->formID == 20) { // The player reference
                     auto& system = System::GetSingleton();
                     if (! system.IsLoadedOrSetLoaded()) {
-                        Log("[coc] Binding declared forms/references to Scripts");
+                        logger::info("[coc] Binding declared forms/references to Scripts");
                         system.BindFormIdsToScripts();
                         if (Config::SearchObjectReferencesOnStart) {
-                            Log("[coc] Search all game references to attach scripts");
+                            logger::info("[coc] Search all game references to attach scripts");
                             System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
                         } else {
-                            Log("[coc] Did not search all game references to attach scripts. Disabled via .ini");
+                            logger::info("[coc] Did not search all game references to attach scripts. Disabled via .ini");
                         }
                     }
                 }
@@ -440,7 +433,7 @@ namespace NoESP {
                     new OnMenuOpenCloseEventSink([](const RE::MenuOpenCloseEvent* event){
                         if (event->opening && event->menuName == "Main Menu") {
                             System::GetSingleton().SetLoaded(false);
-                            Log("Detected Main Menu. New game or Load game or COC will apply scripts for any matching ObjectReferences in the game.");
+                            logger::info("Detected Main Menu. New game or Load game or COC will apply scripts for any matching ObjectReferences in the game.");
                         }
                     })
             );
@@ -451,18 +444,18 @@ namespace NoESP {
 
             auto& system = System::GetSingleton();
             if (form) {
-                Log("[Form Binding] Form:{:x} '{}' Script:{}", form->formID, form->GetName(), scriptName);
+                logger::info("[Form Binding] Form:{:x} '{}' Script:{}", form->formID, form->GetName(), scriptName);
                 system.AddFormIdForScript(form->formID, scriptName, def);
 
                 if (! form->AsReference()) {
                     if (form->GetFormType() == RE::FormType::Keyword) {
-                        Log("[Form Binding] Keyword:{} Script:{}", form->GetName(), scriptName);
+                        logger::info("[Form Binding] Keyword:{} Script:{}", form->GetName(), scriptName);
                         system.AddKeywordIdForScript(form->As<RE::BGSKeyword>(), scriptName, def);
                     } else if (form->GetFormType() == RE::FormType::FormList) {
-                        Log("[Form Binding] FormList:{} Script:{}", form->GetName(), scriptName);
+                        logger::info("[Form Binding] FormList:{} Script:{}", form->GetName(), scriptName);
                         system.AddFormListIdForScript(form->As<RE::BGSListForm>(), scriptName, def);
                     } else {
-                        Log("[Form Binding] BaseForm:{:x} '{}' Script:{}", form->formID, form->GetName(), scriptName);
+                        logger::info("[Form Binding] BaseForm:{:x} '{}' Script:{}", form->formID, form->GetName(), scriptName);
                         system.AddBaseFormIdForScript(form->formID, scriptName, def);
                     }
                 }
@@ -478,14 +471,14 @@ namespace NoESP {
                 RE::TESForm* form = nullptr;
                 if (entry.Type == BindingDefinitionType::FormID && entry.Plugin.empty()) {
                     form = RE::TESForm::LookupByID(entry.FormID);
-                    if (! form) Log("({}:{}) Form not found: '{:x}'", entry.Filename, entry.ScriptName, entry.FormID);
+                    if (! form) logger::info("({}:{}) Form not found: '{:x}'", entry.Filename, entry.ScriptName, entry.FormID);
                 } else if (entry.Type == BindingDefinitionType::FormID && ! entry.Plugin.empty()) {
                     form = RE::TESDataHandler::GetSingleton()->LookupForm(entry.FormID, entry.Plugin);
-                    if (!form) Log("({}:{}) Form not found from plugin '{}': '{:x}'", entry.Filename, entry.ScriptName, entry.Plugin, entry.FormID);
+                    if (!form) logger::info("({}:{}) Form not found from plugin '{}': '{:x}'", entry.Filename, entry.ScriptName, entry.Plugin, entry.FormID);
                 } else if (entry.Type == BindingDefinitionType::EditorID) {
                     if (entry.EditorIdMatcher.Type == EditorIdMatcherType::Exact) {
                         form = RE::TESForm::LookupByEditorID(entry.EditorIdMatcher.Text);
-                        if (! form) Log("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorIdMatcher.Text);
+                        if (! form) logger::info("({}:{}) Form not found by editor ID: '{}'", entry.Filename, entry.ScriptName, entry.EditorIdMatcher.Text);
                     } else {
                         editorIdMatchers.emplace_back(entry);
                     }
@@ -511,11 +504,11 @@ namespace NoESP {
             // If any scrips want to match on editor ID, run all of those matchers!
             if (! editorIdMatchers.empty()) {
                 const auto& [map, lock] = RE::TESForm::GetAllFormsByEditorID();
-                Log("Searching all forms in the game (GetAllFormsByEditorID {}) by editor IDs:", map->size());
+                logger::info("Searching all forms in the game (GetAllFormsByEditorID {}) by editor IDs:", map->size());
                 for (auto& bindingDefinition : editorIdMatchers) {
-                    Log("- {}", bindingDefinition.EditorIdMatcher.Text);
+                    logger::info("- {}", bindingDefinition.EditorIdMatcher.Text);
                 }
-                // O(log(n)) - Hooray! Can't use an inner O(1) lookup because it hast to use text matching / regex for each editor ID to see if it matches
+                // O(logger::info(n)) - Hooray! Can't use an inner O(1) lookup because it hast to use text matching / regex for each editor ID to see if it matches
                 for (auto iterator = map->begin(); iterator != map->end(); iterator++) {
                     for (auto& bindingDefinition : editorIdMatchers) {
                         if (DoesEditorIdMatch(bindingDefinition.EditorIdMatcher, iterator->first.c_str())) {
@@ -532,10 +525,10 @@ namespace NoESP {
             // Look for anything of a type! Jeepers creepers, this searches a lot!
             if (editorIdMatchers.empty() && ! formTypeMatchers.empty()) {
                 const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
-                Log("Searching all forms in the game (GetAllForms {}) for ones matching form types:", formTypeMatchers.size());
+                logger::info("Searching all forms in the game (GetAllForms {}) for ones matching form types:", formTypeMatchers.size());
                 for (auto& bindingDefinition : formTypeMatchers) {
                     for (const auto& type : bindingDefinition.FormTypes) {
-                        Log("- {}", (int) type);
+                        logger::info("- {}", (int) type);
                     }
                 }
                 int i = 0;

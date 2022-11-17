@@ -84,7 +84,7 @@ namespace NoESP::AutoBindingsFile {
                 ParsePropertiesFromLine(properties, line);
             }
         } catch (...) {
-            Log("Error parsing properties from line '{}'", line);
+            logger::info("Error parsing properties from line '{}'", line);
         }
     }
 
@@ -372,7 +372,7 @@ namespace NoESP::AutoBindingsFile {
                 if (FORM_TYPES_BY_NAME.contains(formTypeName)) {
                     def.FormTypes.insert(FORM_TYPES_BY_NAME[formTypeName]);
                 } else {
-                    Log("Form type not found for name '{}'", formTypeName);
+                    logger::info("Form type not found for name '{}'", formTypeName);
                 }
                 formTypeNames = formTypeNames.substr(index + 1);
                 index = formTypeNames.find('|');
@@ -381,7 +381,7 @@ namespace NoESP::AutoBindingsFile {
                 if (FORM_TYPES_BY_NAME.contains(formTypeNames)) {
                     def.FormTypes.insert(FORM_TYPES_BY_NAME[formTypeNames]);
                 } else {
-                    Log("Form type not found for name '{}'", formTypeNames);
+                    logger::info("Form type not found for name '{}'", formTypeNames);
                 }
             }
         }
@@ -410,7 +410,7 @@ namespace NoESP::AutoBindingsFile {
                 try {
                     entry.FormID = std::stoi("0x" + formIdHex, nullptr, 16);
                 } catch (...) {
-                    Log("Invalid FormID '0x{}'", formIdHex);
+                    logger::info("Invalid FormID '0x{}'", formIdHex);
                 }
                 entry.Plugin = matches[3].str();
             } else if (std::regex_search(line, matches, scriptNameWithSkyrimFormID)) {
@@ -430,10 +430,10 @@ namespace NoESP::AutoBindingsFile {
                 entry.ScriptName = matches[1].str();
                 entry.FormID = 20; // 0x14 which is the PlayerRef
             } else {
-                Log("Unknown/Unsupported Entry Line Syntax: '{}'", line);
+                logger::info("Unknown/Unsupported Entry Line Syntax: '{}'", line);
             }
         } catch (...) {
-            Log("Error parsing line: '{}'", line);
+            logger::info("Error parsing line: '{}'", line);
         }
         return entry;
     }
@@ -480,17 +480,17 @@ namespace NoESP::AutoBindingsFile {
                                         try {
                                             entryCallback(entry);
                                         } catch (...) {
-                                            Log("[Internal] AutoBinding entry discovery callback failed for '{}'", line);
+                                            logger::info("[Internal] AutoBinding entry discovery callback failed for '{}'", line);
                                         }
                                     }
                                 } catch (...) {
-                                    Log("Failed to parse entry line '{}'", line);
+                                    logger::info("Failed to parse entry line '{}'", line);
                                 }
                             }
                         }
                     }
                 } catch (...) {
-                    Log("Failed to read file '{}'", file.path().string());
+                    logger::info("Failed to read file '{}'", file.path().string());
                 }
             }
         }
