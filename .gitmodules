@@ -1,9 +1,0 @@
-[submodule "CommonLib/SE"]
-	path = CommonLib/SE
-	url = https://github.com/powerof3/CommonLibSSE.git
-[submodule "CommonLib/AE"]
-	path = CommonLib/AE
-	url = https://github.com/powerof3/CommonLibSSE.git
-[submodule "CommonLib/VR"]
-	path = CommonLib/VR
-	url = https://github.com/mrowrpurr/CommonLibVR.git
