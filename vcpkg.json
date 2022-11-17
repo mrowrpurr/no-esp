@@ -1,21 +1,10 @@
 {
     "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
-    "name": "skyrim-esp-less",
-    "version-string": "0.0.1",
-    "description": ".esp-less Papyrus (for Skyrim modders)",
-    "homepage": "https://github.com/mrowrpurr/esp-less",
-    "license": "MIT",
-    "supports": "windows & x64",
+    "name": "no-esp",
+    "version-string": "1.2.1",
     "dependencies": [
-        "boost-stl-interfaces",
-        "spdlog",
-        "xbyak",
-        "rsm-binary-io",
-        "simpleini",
-        "bandit"
-    ],
-    "builtin-baseline":"bba8794b82a0f44b8709f294850a2c8e96b61415",
-    "overrides": [
-        { "name": "fmt", "version": "8.0.1" }
+        "commonlibsse-ng",
+        "bandit",
+        "simpleini"
     ]
 }

@@ -8,6 +8,10 @@
     "settings": {
         "papyrus.skyrimSpecialEdition.enabled": true,
         "papyrus.fallout4.enabled": false,
-        "papyrus.skyrim.enabled": false
+        "papyrus.skyrim.enabled": false,
+        "files.associations": {
+            "xstring": "cpp",
+            "unordered_map": "cpp"
+        }
     }
 }

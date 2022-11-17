@@ -16,7 +16,7 @@ namespace NoESP::Config {
             try {
                 CSimpleIni ini;
                 auto loadError = ini.LoadFile(iniPath.string().c_str());
-                if (loadError == SI_Error::SI_OK) {
+                if (loadError == SI_OK) {
                     // [Logging] bLogToConsole
                     LogToConsole = ini.GetBoolValue(L"Logging", L"bLogToConsole", false);
                     if (LogToConsole) {
@@ -38,10 +38,10 @@ namespace NoESP::Config {
                         i++;
                     }
                 } else {
-                    SKSE::log::info(std::format("Failed to parse .ini {}", iniPath.string()));
+                    logger::info("Failed to parse .ini {}", iniPath.string());
                 }
             } catch (...) {
-                 SKSE::log::info(std::format("Failed to load .ini {}", iniPath.string()));
+                 logger::info("Failed to load .ini {}", iniPath.string());
             }
         }
     }
