@@ -296,6 +296,11 @@ namespace NoESP {
             auto& system = System::GetSingleton();
             auto* baseForm = ref.GetBaseObject();
 
+            if (!baseForm) {
+                logger::info("TryBindReference ref.GetBaseObject() is nullptr");
+                return;
+            }
+
             // Check 3 things...
             bool shouldSearchEverythingByFormType = true;
 
@@ -391,7 +396,14 @@ namespace NoESP {
                 const auto& [literallyEveryFormInTheGame, lock] = RE::TESForm::GetAllForms();
                 for (auto& [id, form] : *literallyEveryFormInTheGame) {
                     auto* ref = form->AsReference();
-                    if (ref) TryBindReferencePointer(ref);
+                    if (ref) {
+                        try {
+                            TryBindReferencePointer(ref);
+                        } catch (...) {
+                            logger::info("Interesting, TryBindReferencePointer failed for this ref:");
+                            logger::info("ref: {:x}", form->GetFormID());
+                        }
+                    }
                 }
                 system.SetLookingAtAllScripts(false);
             }
