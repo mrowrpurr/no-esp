@@ -209,167 +209,180 @@ namespace NoESP {
         }
 
         static void TryBindReferencePointer(RE::TESObjectREFR* ref) {
-            if (ref->IsDeleted()) return;
+            try {
+                if (ref->IsDeleted()) return;
 
-            std::unordered_map<std::string, BindingDefinition> scriptsToBindWithDefinitions;
+                std::unordered_map<std::string, BindingDefinition> scriptsToBindWithDefinitions;
 
-            auto& system = System::GetSingleton();
-            auto* baseForm = ref->GetBaseObject();
+                auto& system = System::GetSingleton();
+                auto* baseForm = ref->GetBaseObject();
 
-            // Check 3 things...
-            bool shouldSearchEverythingByFormType = true;
-
-            // 1: BaseForm
-            for (auto& [scriptName, bindingDefinition] : system.ScriptsForBaseForm(baseForm->formID)) {
-                shouldSearchEverythingByFormType = false;
-                if (scriptsToBindWithDefinitions.contains(scriptName) && (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType()))) {
-                    auto& existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
-                    MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
-                } else {
-                    scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                if (!baseForm) {
+                    logger::info("TryBindReference ref.GetBaseObject() is nullptr");
+                    return;
                 }
-            }
 
-            // 2: Keywords
-            for (const auto& [keyword, scriptNames] : system.GetScriptNamesForKeywords()) {
-                if (ref->HasKeyword(keyword)) {
+                // Check 3 things...
+                bool shouldSearchEverythingByFormType = true;
+
+                // 1: BaseForm
+                for (auto& [scriptName, bindingDefinition] : system.ScriptsForBaseForm(baseForm->formID)) {
                     shouldSearchEverythingByFormType = false;
-                    for (auto& [scriptName, bindingDefinition] : system.GetScriptNamesForKeyword(keyword)) {
-                        if (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType())) {
-                            if (scriptsToBindWithDefinitions.contains(scriptName)) {
-                                auto& existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
-                                MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
-                            } else {
-                                scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                    if (scriptsToBindWithDefinitions.contains(scriptName) && (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType()))) {
+                        auto& existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
+                        MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
+                    } else {
+                        scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                    }
+                }
+
+                // 2: Keywords
+                for (const auto& [keyword, scriptNames] : system.GetScriptNamesForKeywords()) {
+                    if (ref->HasKeyword(keyword)) {
+                        shouldSearchEverythingByFormType = false;
+                        for (auto& [scriptName, bindingDefinition] : system.GetScriptNamesForKeyword(keyword)) {
+                            if (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType())) {
+                                if (scriptsToBindWithDefinitions.contains(scriptName)) {
+                                    auto& existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
+                                    MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
+                                } else {
+                                    scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // 3: FormList presence
-            for (const auto& [formList, scriptNames] : system.GetScriptNamesForFormLists()) {
-                if (formList->HasForm(ref) || formList->HasForm(baseForm)) {
-                    shouldSearchEverythingByFormType = false;
-                    for (auto& [scriptName, bindingDefinition] : system.GetScriptNamesForFormList(formList)) {
-                        if (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType())) {
-                            if (scriptsToBindWithDefinitions.contains(scriptName)) {
-                                auto &existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
-                                MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
-                            } else {
-                                scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                // 3: FormList presence
+                for (const auto& [formList, scriptNames] : system.GetScriptNamesForFormLists()) {
+                    if (formList->HasForm(ref) || formList->HasForm(baseForm)) {
+                        shouldSearchEverythingByFormType = false;
+                        for (auto& [scriptName, bindingDefinition] : system.GetScriptNamesForFormList(formList)) {
+                            if (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType())) {
+                                if (scriptsToBindWithDefinitions.contains(scriptName)) {
+                                    auto &existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
+                                    MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
+                                } else {
+                                    scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // 4: Form Type
-            if (shouldSearchEverythingByFormType) {
-                for (const auto&[formType, scriptNames]: system.GetScriptNamesForFormTypes()) {
-                    if (ref->GetFormType() == formType || baseForm->GetFormType() == formType) {
-                        for (auto&[scriptName, bindingDefinition]: system.GetScriptNamesForFormType(formType)) {
-                            if (bindingDefinition.Type != BindingDefinitionType::FormType) continue;
-                            if (scriptsToBindWithDefinitions.contains(scriptName)) {
-                                auto &existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
-                                MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
-                            } else {
-                                scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                // 4: Form Type
+                if (shouldSearchEverythingByFormType) {
+                    for (const auto&[formType, scriptNames]: system.GetScriptNamesForFormTypes()) {
+                        if (ref->GetFormType() == formType || baseForm->GetFormType() == formType) {
+                            for (auto&[scriptName, bindingDefinition]: system.GetScriptNamesForFormType(formType)) {
+                                if (bindingDefinition.Type != BindingDefinitionType::FormType) continue;
+                                if (scriptsToBindWithDefinitions.contains(scriptName)) {
+                                    auto &existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
+                                    MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
+                                } else {
+                                    scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // Bind the scripts!
-            for (auto& [scriptName, bindingDefinition] : scriptsToBindWithDefinitions) {
-                system.TryLinkScript(scriptName);
-                PapyrusScriptBindings::BindToFormPointer(scriptName, ref, bindingDefinition.PropertyValues, true);
+                // Bind the scripts!
+                for (auto& [scriptName, bindingDefinition] : scriptsToBindWithDefinitions) {
+                    system.TryLinkScript(scriptName);
+                    PapyrusScriptBindings::BindToFormPointer(scriptName, ref, bindingDefinition.PropertyValues, true);
+                }
+            } catch (...) {
+                logger::info("TryBindReferencePointer: Misc error");
             }
         }
 
         static void TryBindReference(RE::TESObjectREFR& ref) {
-            if (ref.IsDeleted()) return;
+            try {
+                if (ref.IsDeleted()) return;
 
-            std::unordered_map<std::string, BindingDefinition> scriptsToBindWithDefinitions;
+                std::unordered_map<std::string, BindingDefinition> scriptsToBindWithDefinitions;
 
-            auto& system = System::GetSingleton();
-            auto* baseForm = ref.GetBaseObject();
+                auto& system = System::GetSingleton();
+                auto* baseForm = ref.GetBaseObject();
 
-            if (!baseForm) {
-                logger::info("TryBindReference ref.GetBaseObject() is nullptr");
-                return;
-            }
-
-            // Check 3 things...
-            bool shouldSearchEverythingByFormType = true;
-
-            // 1: BaseForm
-            for (auto& [scriptName, bindingDefinition] : system.ScriptsForBaseForm(baseForm->formID)) {
-                shouldSearchEverythingByFormType = false;
-                if (scriptsToBindWithDefinitions.contains(scriptName) && (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType()))) {
-                    auto& existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
-                    MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
-                } else {
-                    scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                if (!baseForm) {
+                    logger::info("TryBindReference ref.GetBaseObject() is nullptr");
+                    return;
                 }
-            }
 
-            // 2: Keywords
-            for (const auto& [keyword, scriptNames] : system.GetScriptNamesForKeywords()) {
-                if (ref.HasKeyword(keyword)) {
+                // Check 3 things...
+                bool shouldSearchEverythingByFormType = true;
+
+                // 1: BaseForm
+                for (auto& [scriptName, bindingDefinition] : system.ScriptsForBaseForm(baseForm->formID)) {
                     shouldSearchEverythingByFormType = false;
-                    for (auto& [scriptName, bindingDefinition] : system.GetScriptNamesForKeyword(keyword)) {
-                        if (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType())) {
-                            if (scriptsToBindWithDefinitions.contains(scriptName)) {
-                                auto& existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
-                                MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
-                            } else {
-                                scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                    if (scriptsToBindWithDefinitions.contains(scriptName) && (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType()))) {
+                        auto& existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
+                        MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
+                    } else {
+                        scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                    }
+                }
+
+                // 2: Keywords
+                for (const auto& [keyword, scriptNames] : system.GetScriptNamesForKeywords()) {
+                    if (ref.HasKeyword(keyword)) {
+                        shouldSearchEverythingByFormType = false;
+                        for (auto& [scriptName, bindingDefinition] : system.GetScriptNamesForKeyword(keyword)) {
+                            if (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType())) {
+                                if (scriptsToBindWithDefinitions.contains(scriptName)) {
+                                    auto& existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
+                                    MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
+                                } else {
+                                    scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // 3: FormList presence
-            for (const auto& [formList, scriptNames] : system.GetScriptNamesForFormLists()) {
-                if (formList->HasForm(&ref) || formList->HasForm(baseForm)) {
-                    shouldSearchEverythingByFormType = false;
-                    for (auto& [scriptName, bindingDefinition] : system.GetScriptNamesForFormList(formList)) {
-                        if (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType())) {
-                            if (scriptsToBindWithDefinitions.contains(scriptName)) {
-                                auto &existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
-                                MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
-                            } else {
-                                scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                // 3: FormList presence
+                for (const auto& [formList, scriptNames] : system.GetScriptNamesForFormLists()) {
+                    if (formList->HasForm(&ref) || formList->HasForm(baseForm)) {
+                        shouldSearchEverythingByFormType = false;
+                        for (auto& [scriptName, bindingDefinition] : system.GetScriptNamesForFormList(formList)) {
+                            if (bindingDefinition.FormTypes.empty() || bindingDefinition.FormTypes.contains(baseForm->GetFormType())) {
+                                if (scriptsToBindWithDefinitions.contains(scriptName)) {
+                                    auto &existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
+                                    MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
+                                } else {
+                                    scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // 4: Form Type
-            if (shouldSearchEverythingByFormType) {
-                for (const auto&[formType, scriptNames]: system.GetScriptNamesForFormTypes()) {
-                    if (ref.GetFormType() == formType || baseForm->GetFormType() == formType) {
-                        for (auto&[scriptName, bindingDefinition]: system.GetScriptNamesForFormType(formType)) {
-                            if (bindingDefinition.Type != BindingDefinitionType::FormType) continue;
-                            if (scriptsToBindWithDefinitions.contains(scriptName)) {
-                                auto &existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
-                                MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
-                            } else {
-                                scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                // 4: Form Type
+                if (shouldSearchEverythingByFormType) {
+                    for (const auto&[formType, scriptNames]: system.GetScriptNamesForFormTypes()) {
+                        if (ref.GetFormType() == formType || baseForm->GetFormType() == formType) {
+                            for (auto&[scriptName, bindingDefinition]: system.GetScriptNamesForFormType(formType)) {
+                                if (bindingDefinition.Type != BindingDefinitionType::FormType) continue;
+                                if (scriptsToBindWithDefinitions.contains(scriptName)) {
+                                    auto &existingPropertyValues = scriptsToBindWithDefinitions[scriptName].PropertyValues;
+                                    MergeProperties(existingPropertyValues, bindingDefinition.PropertyValues);
+                                } else {
+                                    scriptsToBindWithDefinitions.insert_or_assign(scriptName, bindingDefinition);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // Bind the scripts!
-            for (auto& [scriptName, bindingDefinition] : scriptsToBindWithDefinitions) {
-                system.TryLinkScript(scriptName);
-                PapyrusScriptBindings::BindToForm(scriptName, ref, bindingDefinition.PropertyValues, true);
+                // Bind the scripts!
+                for (auto& [scriptName, bindingDefinition] : scriptsToBindWithDefinitions) {
+                    system.TryLinkScript(scriptName);
+                    PapyrusScriptBindings::BindToForm(scriptName, ref, bindingDefinition.PropertyValues, true);
+                }
+            } catch (...) {
+                logger::info("TryBindReference: Misc error");
             }
         }
 
