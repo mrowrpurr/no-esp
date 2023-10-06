@@ -1,6 +1,7 @@
 #pragma once
 
 #include <RE/F/FormTypes.h>
+#include <_Log_.h>
 
 #include <filesystem>
 #include <format>
@@ -12,7 +13,6 @@
 
 #include "BindingDefinition.h"
 #include "Utilities.h"
-
 
 namespace NoESP::AutoBindingsFile {
 

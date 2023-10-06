@@ -21,9 +21,10 @@ namespace NoESP::Config {
                 if (loadError == SI_OK) {
                     // [Logging] bLogToConsole
                     LogToConsole = ini.GetBoolValue(L"Logging", L"bLogToConsole", false);
-                    if (LogToConsole) {
-                        RE::ConsoleLog::GetSingleton()->Print("Console logging enabled.");
-                    }
+                    // if (LogToConsole) {
+                    //     ConsoleLog("Console logging enabled.");
+                    //     // RE::ConsoleLog::GetSingleton()->Print("Console logging enabled.");
+                    // }
                     // [Logging] bLogObjectSearch
                     LogObjectSearch = ini.GetBoolValue(L"Logging", L"bLogObjectSearch", false);
                     // [Bindings] bSearchReferencesOnLoad
