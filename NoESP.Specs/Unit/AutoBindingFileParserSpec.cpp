@@ -3,6 +3,7 @@
 
 #include <NoESP/AutoBindingsParser.h>
 #include <NoESP/BindingDefinition.h>
+#include <_Log_.h>
 
 Describe("Parsing AutoBindings lines") {
     it("ScriptName", [&]() {
@@ -127,13 +128,11 @@ Describe("Parsing AutoBindings lines") {
         AssertThat(def.PropertyValues["multiline"].PropertyValueText,
                    Equals("\nthis\t has special\n characters\n"));
     });
-    // xit("ScriptName Ints=[1, 2, 3]", [&]() {});
     it("ScriptName [BOOK]", [&]() {
         auto def = NoESP::AutoBindingsFile::ParseLine(R"(MyScript [BOOK])");
 
         AssertThat(def.ScriptName, Equals("MyScript"));
-        AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
-        AssertThat(def.FormID, Equals(20));  // The player
+        AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormType));
         AssertThat(def.FormTypes.size(), Equals(1));
 
         std::vector<RE::FormType> formTypes;
@@ -146,8 +145,7 @@ Describe("Parsing AutoBindings lines") {
         auto def = NoESP::AutoBindingsFile::ParseLine(R"(MyScript [weapon|armor])");
 
         AssertThat(def.ScriptName, Equals("MyScript"));
-        AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
-        AssertThat(def.FormID, Equals(20));  // The player
+        AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormType));
         AssertThat(def.FormTypes.size(), Equals(2));
         AssertThat(def.FormTypes, Contains(RE::FormType::Weapon));
         AssertThat(def.FormTypes, Contains(RE::FormType::Armor));
@@ -157,10 +155,19 @@ Describe("Parsing AutoBindings lines") {
             R"(Kaboom [Book] TheExplosion=ExplosionShockMass01)");
 
         AssertThat(def.ScriptName, Equals("Kaboom"));
-        AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormID));
-        AssertThat(def.FormID, Equals(20));  // The player
-        AssertThat(def.FormTypes.size(), Equals(2));
-        AssertThat(def.FormTypes, Contains(RE::FormType::Weapon));
-        AssertThat(def.FormTypes, Contains(RE::FormType::Armor));
+        AssertThat(def.Type, Equals(NoESP::BindingDefinitionType::FormType));
+        AssertThat(def.FormTypes.size(), Equals(1));
+
+        std::vector<RE::FormType> formTypes;
+        formTypes.assign(def.FormTypes.begin(), def.FormTypes.end());
+
+        AssertThat(formTypes.size(), Equals(1));
+        AssertThat(formTypes[0], Equals(RE::FormType::Book));
+
+        AssertThat(def.PropertyValues.size(), Equals(1));
+        AssertThat(def.PropertyValues.contains("theexplosion"), Equals(true));
+
+        auto property = def.PropertyValues["theexplosion"];
+        AssertThat(property.PropertyName, Equals("theexplosion"));
     });
 }
