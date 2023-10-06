@@ -3,16 +3,20 @@
 #include <RE/T/TESObjectREFR.h>
 
 #include "PapyrusScriptBindings.h"
+#include "System.h"
+
 
 namespace NoESP::PapyrusInterface {
 
-    void BindScript_ToForm(RE::StaticFunctionTag*, std::string scriptName, RE::TESForm* form, bool addOnce = false) {
+    void BindScript_ToForm(RE::StaticFunctionTag*, std::string scriptName, RE::TESForm* form,
+                           bool addOnce = false) {
         if (!System::GetSingleton().TryLinkScript(scriptName)) return;
         FormPropertyMap propertyMap;
         PapyrusScriptBindings::BindToFormPointer(scriptName, form, propertyMap, addOnce);
     }
 
-    void BindScript_ToEditorId(RE::StaticFunctionTag*, std::string scriptName, std::string editorId, bool addOnce = false) {
+    void BindScript_ToEditorId(RE::StaticFunctionTag*, std::string scriptName, std::string editorId,
+                               bool addOnce = false) {
         if (!System::GetSingleton().TryLinkScript(scriptName)) return;
         FormPropertyMap propertyMap;
         PapyrusScriptBindings::BindToEditorId(scriptName, editorId, propertyMap, addOnce);
@@ -22,7 +26,8 @@ namespace NoESP::PapyrusInterface {
         System::CheckForObjectsToAttachScriptsToFromLiterallyEveryFormInTheGame();
     }
 
-    void BindScript_SearchObjectsInRadius(RE::StaticFunctionTag*, float radius, RE::TESObjectREFR* ref = nullptr) {
+    void BindScript_SearchObjectsInRadius(RE::StaticFunctionTag*, float radius,
+                                          RE::TESObjectREFR* ref = nullptr) {
         if (ref) {
             System::CheckForObjectsToAttachScriptsToForObjectsInRange(ref, radius);
         } else {
@@ -37,8 +42,10 @@ namespace NoESP::PapyrusInterface {
     bool BIND(RE::BSScript::IVirtualMachine* vm) {
         vm->RegisterFunction("ToForm", "BindScript", BindScript_ToForm);
         vm->RegisterFunction("ToEditorId", "BindScript", BindScript_ToEditorId);
-        vm->RegisterFunction("SearchObjectsInRadius", "BindScript", BindScript_SearchObjectsInRadius);
-        vm->RegisterFunction("RefreshAllObjectReferences", "BindScript", BindScript_RefreshAllObjectReferences);
+        vm->RegisterFunction("SearchObjectsInRadius", "BindScript",
+                             BindScript_SearchObjectsInRadius);
+        vm->RegisterFunction("RefreshAllObjectReferences", "BindScript",
+                             BindScript_RefreshAllObjectReferences);
         vm->RegisterFunction("Get", "FormFromEditorID", FormFromEditorID_Get);
         return true;
     }

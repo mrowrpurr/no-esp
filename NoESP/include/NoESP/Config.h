@@ -1,16 +1,18 @@
 #pragma once
 
-#include <chrono>
-#include <string>
-#include <filesystem>
 #include <SimpleIni.h>
+
+#include <filesystem>
+#include <functional>
+#include <string>
 
 namespace NoESP::Config {
     bool LogToConsole = false;
     bool SearchObjectReferencesOnStart = true;
     bool LogObjectSearch = false;
 
-    void LoadFromIni(const std::function<void(int searchIndex, double radius, long interval)>& objectSearchConfigEntryCallback) {
+    void LoadFromIni(const std::function<void(int searchIndex, double radius, long interval)>&
+                         objectSearchConfigEntryCallback) {
         auto iniPath = std::filesystem::current_path() / "Data" / "SKSE" / "Plugins" / "no-esp.ini";
         if (std::filesystem::is_regular_file(iniPath)) {
             try {
@@ -25,23 +27,27 @@ namespace NoESP::Config {
                     // [Logging] bLogObjectSearch
                     LogObjectSearch = ini.GetBoolValue(L"Logging", L"bLogObjectSearch", false);
                     // [Bindings] bSearchReferencesOnLoad
-                    SearchObjectReferencesOnStart = ini.GetBoolValue(L"Bindings", L"bSearchReferencesOnLoad", false);
+                    SearchObjectReferencesOnStart =
+                        ini.GetBoolValue(L"Bindings", L"bSearchReferencesOnLoad", false);
                     // [ObjectSearch] fSearch1Radius iSearchIntervalMs
                     int i = 1;
-                    while (ini.GetValue(L"ObjectSearch", std::format(L"fSearch{}Radius", i).c_str())) {
-                        double radius = ini.GetDoubleValue(L"ObjectSearch", std::format(L"fSearch{}Radius", i).c_str(), 0);
-                        long interval = ini.GetLongValue(L"ObjectSearch", std::format(L"iSearch{}IntervalMs", i).c_str(), 0);
-                        std::thread t([i, radius, interval, objectSearchConfigEntryCallback](){
+                    while (
+                        ini.GetValue(L"ObjectSearch", std::format(L"fSearch{}Radius", i).c_str())) {
+                        double radius = ini.GetDoubleValue(
+                            L"ObjectSearch", std::format(L"fSearch{}Radius", i).c_str(), 0);
+                        long interval = ini.GetLongValue(
+                            L"ObjectSearch", std::format(L"iSearch{}IntervalMs", i).c_str(), 0);
+                        std::thread t([i, radius, interval, objectSearchConfigEntryCallback]() {
                             objectSearchConfigEntryCallback(i, radius, interval);
                         });
                         t.detach();
                         i++;
                     }
                 } else {
-                    logger::info("Failed to parse .ini {}", iniPath.string());
+                    _Log_("Failed to parse .ini {}", iniPath.string());
                 }
             } catch (...) {
-                 logger::info("Failed to load .ini {}", iniPath.string());
+                _Log_("Failed to load .ini {}", iniPath.string());
             }
         }
     }

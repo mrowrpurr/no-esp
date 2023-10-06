@@ -11,9 +11,9 @@ namespace NoESP {
     };
 
     class ScriptPropertyTypeCache {
-
         // Cache types of properties which we need to manually set on scripts
-        std::unordered_map<std::string, std::unordered_map<std::string, ScriptPropertyType>> _scriptPropertyTypes;
+        std::unordered_map<std::string, std::unordered_map<std::string, ScriptPropertyType>>
+            _scriptPropertyTypes;
 
         ScriptPropertyTypeCache() = default;
 
@@ -26,12 +26,13 @@ namespace NoESP {
             return cache;
         }
 
-        std::optional<ScriptPropertyType> GetOrLookupScriptPropertyType(const std::string& scriptName, const std::string& propertyName) {
+        std::optional<ScriptPropertyType> GetOrLookupScriptPropertyType(
+            const std::string& scriptName, const std::string& propertyName) {
             auto lowerScriptName = Utilities::ToLowerCase(scriptName);
 
-            if (! _scriptPropertyTypes.contains(lowerScriptName)) {
+            if (!_scriptPropertyTypes.contains(lowerScriptName)) {
                 std::unordered_map<std::string, ScriptPropertyType> propertyTypes;
-                logger::info("Caching all properties for script {}", scriptName);
+                _Log_("Caching all properties for script {}", scriptName);
                 try {
                     auto* vm = VirtualMachine::GetSingleton();
                     RE::BSTSmartPointer<RE::BSScript::ObjectTypeInfo> objectTypeInfoPtr;
@@ -45,26 +46,31 @@ namespace NoESP {
                                 auto rawType = properties[i].info.type.GetRawType();
                                 type.RawType = rawType;
                                 try {
-                                    auto *typeInfo = properties[i].info.type.GetTypeInfo();
+                                    auto* typeInfo = properties[i].info.type.GetTypeInfo();
                                     if (typeInfo) {
-                                        auto rawTypeId = (size_t) rawType;
-                                        if (rawType == TypeInfo::RawType::kArraysEnd || (rawTypeId >= 0 && rawTypeId <= 15)) {
+                                        auto rawTypeId = (size_t)rawType;
+                                        if (rawType == TypeInfo::RawType::kArraysEnd ||
+                                            (rawTypeId >= 0 && rawTypeId <= 15)) {
                                             // ...
                                         } else {
                                             type.PropertyScriptName = typeInfo->GetName();
                                         }
                                     }
                                 } catch (...) {
-                                    logger::info("Could not lookup type info for property {}", propertyName);
+                                    _Log_("Could not lookup type info for property {}",
+                                          propertyName);
                                 }
-                                propertyTypes.insert_or_assign(Utilities::ToLowerCase(thisPropertyName.c_str()), type);
+                                propertyTypes.insert_or_assign(
+                                    Utilities::ToLowerCase(thisPropertyName.c_str()), type);
                             } catch (...) {
-                                logger::info("No PropertyScriptName could be looked up for {}", propertyName);
+                                _Log_("No PropertyScriptName could be looked up for {}",
+                                      propertyName);
                             }
                         }
                     }
                 } catch (...) {
-                    logger::info("Failed to lookup/cache script property types for {} {}", scriptName, propertyName);
+                    _Log_("Failed to lookup/cache script property types for {} {}", scriptName,
+                          propertyName);
                 }
                 _scriptPropertyTypes.insert_or_assign(lowerScriptName, propertyTypes);
             }

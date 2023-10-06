@@ -1,19 +1,19 @@
-#include <string.h>
-#include <iostream>
-
-#include <spdlog/spdlog.h>
 #include <bandit/bandit.h>
 #include <snowhouse/snowhouse.h>
+#include <spdlog/spdlog.h>
+#include <string.h>
 
-#include <RE/F/FormTypes.h>
+#include <format>
+#include <iostream>
+#include <string_view>
 
 using namespace bandit;
 using namespace snowhouse;
 
 namespace NoESP {
     template <class... Types>
-    void logger::infoconst std::string text, const Types&... args) {
-         std::cout << std::format(text, args...) + "\n";
+    void Log(const std::string text, const Types &...args) {
+        std::cout << std::format(text, args...) + "\n";
     };
 }
 
